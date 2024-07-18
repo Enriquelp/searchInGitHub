@@ -8,18 +8,42 @@ import searchYAML
 import filterManifest
 
 year2024 = [
-    "created:2024-01-01..2024-01-31",
-    "created:2024-02-01..2024-02-29",
-    "created:2024-03-01..2024-03-31",
-    "created:2024-04-01..2024-04-30",
-    "created:2024-05-01..2024-05-31",
-    "created:2024-06-01..2024-06-30",
-    "created:2024-07-01..2024-07-31",
-    "created:2024-08-01..2024-08-31",
-    "created:2024-09-01..2024-09-30",
-    "created:2024-10-01..2024-10-31",
-    "created:2024-11-01..2024-11-30",
-    "created:2024-12-01..2024-12-31"
+    "created:2024-01-01..2024-01-10",
+    "created:2024-01-11..2024-01-20",
+    "created:2024-01-21..2024-01-31",
+    "created:2024-02-01..2024-02-10",
+    "created:2024-02-11..2024-02-20",
+    "created:2024-02-21..2024-02-29",
+    "created:2024-03-01..2024-03-10",
+    "created:2024-03-11..2024-03-20",
+    "created:2024-03-21..2024-03-31",
+    "created:2024-04-01..2024-04-10",
+    "created:2024-04-11..2024-04-20",
+    "created:2024-04-21..2024-04-30",
+    "created:2024-05-01..2024-05-10",
+    "created:2024-05-11..2024-05-20",
+    "created:2024-05-21..2024-05-31",
+    "created:2024-06-01..2024-06-10",
+    "created:2024-06-11..2024-06-20",
+    "created:2024-06-21..2024-06-30",
+    "created:2024-07-01..2024-07-10",
+    "created:2024-07-11..2024-07-20",
+    "created:2024-07-21..2024-07-31",
+    "created:2024-08-01..2024-08-10",
+    "created:2024-08-11..2024-08-20",
+    "created:2024-08-21..2024-08-31",
+    "created:2024-09-01..2024-09-10",
+    "created:2024-09-11..2024-09-20",
+    "created:2024-09-21..2024-09-30",
+    "created:2024-10-01..2024-10-10",
+    "created:2024-10-11..2024-10-20",
+    "created:2024-10-21..2024-10-31",
+    "created:2024-11-01..2024-11-10",
+    "created:2024-11-11..2024-11-20",
+    "created:2024-11-21..2024-11-30",
+    "created:2024-12-01..2024-12-10"
+    "created:2024-12-11..2024-12-20"
+    "created:2024-12-21..2024-12-31"
 ]
 
 # Mi token de GitHub
@@ -27,7 +51,7 @@ github_token = os.getenv("github_token")
 
 # Configuración
 github_user = 'Enriquelp'
-query = 'Kubernetes_manifest'
+query = 'Kubernetes'
 clonar_en_directorio = 'Repositories/'
 destYAML = "YAMLs"
 
@@ -100,8 +124,9 @@ for month in year2024:
     page = 1
     repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, 1, month)
     numRepo = 1
+    maxPage = (numMaxRepo//100) +1
 
-    while numRepo <= numMaxRepo and numRepo <= 1000 and page < 100:
+    while numRepo <= numMaxRepo and numRepo <= 1000 and page <= maxPage:
         for repoURL in repositoriosURL:
             print(f"<---- Repositorio {numRepo} de {numMaxRepo} ---->")
             ruta_repositorio = clonar_en_directorio+repoURL['full_name']
@@ -115,7 +140,8 @@ for month in year2024:
             numRepo += 1
 
         page +=1
-        repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, page, month)
+        if page <= maxPage and numRepo <= 1000 and numRepo <= numMaxRepo: 
+            repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, page, month)
         
 
 filterManifest.main(destYAML)

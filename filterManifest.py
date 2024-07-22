@@ -2,6 +2,7 @@
 # Kubernetes, verificando si existen las palabras apiVersion y kind.
 
 import os
+import shutil
 
 def is_kubernetes_manifest(file_path):
     try:
@@ -15,13 +16,17 @@ def is_kubernetes_manifest(file_path):
         return False
 
 # Recorre todos los archivos en la carpeta
-def main(folder_path):
+def main(folder_path, destnonyamls):
     print(f"Eliminando archivos que no son manifiestos de kubernetes...")
     eliminated = 0
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         if filename.endswith('.yaml') or filename.endswith('.yml'):
             if not is_kubernetes_manifest(file_path):
+                if not os.path.exists(destnonyamls):
+                     os.makedirs(destnonyamls)
+                shutil.copy2(file_path, destnonyamls)
                 os.remove(file_path)
                 eliminated += 1
     print(f"Se han eliminado {eliminated} archivos")    
+    return eliminated

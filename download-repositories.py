@@ -6,7 +6,9 @@ import psutil
 import stat
 import searchYAML
 import filterManifest
+import csv
 
+# Año 2024 dividido en periodos de 10-11 dias
 year2024 = [
     "created:2024-01-01..2024-01-10",
     "created:2024-01-11..2024-01-20",
@@ -46,18 +48,24 @@ year2024 = [
     "created:2024-12-21..2024-12-31"
 ]
 
-# Mi token de GitHub
-github_token = os.getenv("github_token")
-
-# Configuración
+# Configuración de GitHub
+github_token = os.getenv("github_token") # mi token de GitHub
 github_user = 'Enriquelp'
-query = 'Kubernetes'
-clonar_en_directorio = 'Repositories/'
-destYAML = "YAMLs"
+
+# Resto de variables
+query = 'Kubernetes_manifest' # string para buscar en GitHub
+clonar_en_directorio = 'Repositories/' # directorio en el que se guardan los repositorios descargados
+destYAML = "YAMLs" # directorio donde se guardan los archivos .yaml
+destNonYAML = "NonYAMLs" # directorio donde se guardan los archivos .yaml que no son manifiestos de kubernetes
+numAllRepos = 0 # numero de repositorios totales descargados
+numAllYamls = 0 # numero total de ficheros .yaml encontrados
+numAllNonYamls = 0 # numero total de ficheros .yaml que no eran manifiestos de kubernetes
+fieldnames = ["nombreRepo", "numRepoIntervalo", "YAMLsEncontrados", "stringBusqueda", "pagBusqueda", "url"] # nombre de las columnas del csv
 
 # elimina un directorio oculto
 def remove_readonly(func, path, _):
     archivo_en_uso(ruta_repositorio)
+    # Elimina los permisos de "read-only"
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
@@ -67,11 +75,11 @@ def buscar_repositorios(query, github_user, github_token, page, month):
     print(f"Descargando repositorios desde la url -> {url}")
     response = requests.get(url, auth=(github_user, github_token))
     if response.status_code == 200:
-        return response.json()['items'], response.json()['total_count']
+        return response.json()['items'], response.json()['total_count'], url
     else:
         response.raise_for_status()
 
-# Comprueba si un archivo o directorio está en uso por otro proceso
+# Comprueba si un archivo o directorio está en uso por otro proceso (necesario para poder borrarlo)
 def archivo_en_uso(ruta):
     ruta_real = os.path.realpath(ruta)
     for proc in psutil.process_iter(['pid', 'name']):
@@ -102,7 +110,7 @@ def clonar_repositorio(repo, directorio_destino):
         print(f"Repositorio {directorio_destino} clonado con exito.")
     except:
         print('Hubo un problema con la clonacion.')
-    # Eliminamos los permisos de "read-only"
+    # Elimina los permisos de "read-only"
     quitar_solo_lectura(directorio_destino)
     return repo
 
@@ -120,28 +128,42 @@ def quitar_solo_lectura(directorio):
             # Quitar el atributo de solo lectura del directorio
             os.chmod(ruta_directorio, stat.S_IWRITE)
 
-for month in year2024:
-    page = 1
-    repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, 1, month)
-    numRepo = 1
-    maxPage = (numMaxRepo//100) +1
+with open('datos.csv', mode='w', newline='') as file:
+    writer = csv.DictWriter(file, fieldnames=fieldnames)
 
-    while numRepo <= numMaxRepo and numRepo <= 1000 and page <= maxPage:
-        for repoURL in repositoriosURL:
-            print(f"<---- Repositorio {numRepo} de {numMaxRepo} ---->")
-            ruta_repositorio = clonar_en_directorio+repoURL['full_name']
-            repo = clonar_repositorio(repoURL, ruta_repositorio)
+    # Escribe la cabecera (nombres de las columnas)
+    writer.writeheader()
 
-            # Guardamos todos los archivos YAML de ese repositorio
-            searchYAML.main(ruta_repositorio, destYAML)
+    for interval in year2024:
+        page = 1
+        # primera busqueda para saber cuantos repositorios se cuentran
+        repositoriosURL, numMaxRepo, urlGitHub = buscar_repositorios(query, github_user, github_token, 1, interval)
+        numRepo = 1 # repositorio por el que se encuentra la ejecucion.
+        maxPage = (numMaxRepo//100) +1 # paginas totales que hay en la busqueda realizada
+        numAllRepos += numMaxRepo
 
-            # Eliminamos el repositorio
-            eliminar_repo(clonar_en_directorio)
-            numRepo += 1
+        while numRepo <= numMaxRepo and numRepo <= 1000 and page <= maxPage:
+            for repoURL in repositoriosURL:
+                print(f"<---- Repositorio {numRepo} de {numMaxRepo} ---->")
+                ruta_repositorio = clonar_en_directorio+repoURL['full_name']
+                repo = clonar_repositorio(repoURL, ruta_repositorio)
 
-        page +=1
-        if page <= maxPage and numRepo <= 1000 and numRepo <= numMaxRepo: 
-            repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, page, month)
-        
+                # Guardamos todos los archivos YAML de ese repositorio
+                numAllYamls += searchYAML.main(ruta_repositorio, destYAML)
 
-filterManifest.main(destYAML)
+                # Eliminamos el repositorio
+                eliminar_repo(clonar_en_directorio)
+                #Guardamos la informacion en un csv
+                data = {"nombreRepo": repoURL['full_name'], "numRepoIntervalo": numRepo, "YAMLsEncontrados": numAllYamls, "stringBusqueda": query, "pagBusqueda": page, "url": urlGitHub}
+                print(data)
+                writer.writerow(data)
+                numRepo += 1
+            # Consultamos si hay 
+            page +=1
+            if page <= maxPage and numRepo <= 1000 and numRepo <= numMaxRepo: 
+                repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, page, interval)
+            
+    # Filtramos aquellos .yaml que no son manifiestos de kubernetes
+    numAllNonYamls = filterManifest.main(destYAML, destNonYAML)
+
+    print(f'\nSe han analizado {numAllRepos} repositorios, encontrandose {numAllYamls} ficheros .yaml, de los cuales se han descartado {numAllNonYamls}')

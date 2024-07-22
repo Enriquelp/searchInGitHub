@@ -19,9 +19,10 @@ def main(root, dest):
         os.makedirs(dest)
     archivos_yaml = buscar_archivos_yaml(directorio_raiz)
 
-    # Imprimir los archivos .yaml encontrados
+    # copiar los archivos .yaml encontrados
     for archivo in archivos_yaml:
         shutil.copy2(archivo, dest)
     print(f"se han copiado {len(archivos_yaml)} archivos")
+    return len(archivos_yaml)
     
 

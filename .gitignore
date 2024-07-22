@@ -1,6 +1,8 @@
 env/
-Repositories/
+__pycache__/
 .env
-github-test/
+Repositories/
 YAMLs/
-__pychache__
+NonYAMLs/
+datos.csv
+

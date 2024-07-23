@@ -53,7 +53,7 @@ github_token = os.getenv("github_token") # mi token de GitHub
 github_user = 'Enriquelp'
 
 # Resto de variables
-query = 'Kubernetes_manifest' # string para buscar en GitHub
+query = 'Kubernetes' # string para buscar en GitHub
 clonar_en_directorio = 'Repositories/' # directorio en el que se guardan los repositorios descargados
 destYAML = "YAMLs" # directorio donde se guardan los archivos .yaml
 destNonYAML = "NonYAMLs" # directorio donde se guardan los archivos .yaml que no son manifiestos de kubernetes
@@ -128,7 +128,7 @@ def quitar_solo_lectura(directorio):
             # Quitar el atributo de solo lectura del directorio
             os.chmod(ruta_directorio, stat.S_IWRITE)
 
-with open('datos.csv', mode='w', newline='') as file:
+with open(query+'.csv', mode='w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=fieldnames)
 
     # Escribe la cabecera (nombres de las columnas)
@@ -161,7 +161,7 @@ with open('datos.csv', mode='w', newline='') as file:
             # Consultamos si hay 
             page +=1
             if page <= maxPage and numRepo <= 1000 and numRepo <= numMaxRepo: 
-                repositoriosURL, numMaxRepo = buscar_repositorios(query, github_user, github_token, page, interval)
+                repositoriosURL, numMaxRepo, urlGitHub = buscar_repositorios(query, github_user, github_token, page, interval)
             
     # Filtramos aquellos .yaml que no son manifiestos de kubernetes
     numAllNonYamls = filterManifest.main(destYAML, destNonYAML)

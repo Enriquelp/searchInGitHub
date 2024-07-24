@@ -155,7 +155,6 @@ with open(query+'.csv', mode='w', newline='') as file:
                 eliminar_repo(clonar_en_directorio)
                 #Guardamos la informacion en un csv
                 data = {"nombreRepo": repoURL['full_name'], "numRepoIntervalo": numRepo, "YAMLsEncontrados": numAllYamls, "stringBusqueda": query, "pagBusqueda": page, "url": urlGitHub}
-                print(data)
                 writer.writerow(data)
                 numRepo += 1
             # Consultamos si hay 

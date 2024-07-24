@@ -149,12 +149,12 @@ with open(query+'.csv', mode='w', newline='') as file:
                 repo = clonar_repositorio(repoURL, ruta_repositorio)
 
                 # Guardamos todos los archivos YAML de ese repositorio
-                numAllYamls += searchYAML.main(ruta_repositorio, destYAML)
-
+                numYamls = searchYAML.main(ruta_repositorio, destYAML)
+                numAllYamls += numYamls
                 # Eliminamos el repositorio
                 eliminar_repo(clonar_en_directorio)
                 #Guardamos la informacion en un csv
-                data = {"nombreRepo": repoURL['full_name'], "numRepoIntervalo": numRepo, "YAMLsEncontrados": numAllYamls, "stringBusqueda": query, "pagBusqueda": page, "url": urlGitHub}
+                data = {"nombreRepo": repoURL['full_name'], "numRepoIntervalo": numRepo, "YAMLsEncontrados": numYamls, "stringBusqueda": query, "pagBusqueda": page, "url": urlGitHub}
                 writer.writerow(data)
                 numRepo += 1
             # Consultamos si hay 

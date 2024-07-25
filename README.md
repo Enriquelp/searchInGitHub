@@ -1,4 +1,16 @@
-# Script de búsqueda en GitHub.
+# Script de búsqueda en GitHub
+
+Este script cumple con el objetivo de examinar repositorios de GitHub en busca de ficheros yaml, más concretamente manifiestos de kubernetes, creados durante el año 2024. De esta forma, los resultados son lo más recientes posibles. 
+
+Los resultados de la ejecución son: 
+
+- Carpeta “YAMLs”, donde se almacenan los manifiestos de Kubernetes. 
+
+- Carpeta “NonYAMLs”, donde se almacenan los yaml que no eran manifiestos. 
+
+- Fichero CSV, donde se guardan los datos de los repositorios examinados. 
+
+- Una salida por consola con los datos generales de la ejecución. 
 
 # Instalación y ejecución
 
@@ -62,7 +74,7 @@ github_token = 'XXXXX'
 # Módulos
 
 - **searchYAMLs:** Está diseñado para buscar archivos con extensión “.*yaml”* en una carpeta específica y copiar todos esos archivos a otra carpeta. Recibe como entrada la ruta donde se encuentra el repositorio a examinar y la ruta a la que se van a copiar los ficheros *yaml. Devuelve el numero de archivos encontrados.*
-- **filterManifest:**     está diseñado para verificar si los archivos YAML en una carpeta específica son manifiestos de Kubernetes. Esto se determina buscando las palabras clave *apiVersion* y *kind* (dos campos que son obligatorios en cualquier manifiesto de Kubernetes)[[1]](https://www.notion.so/Script-de-b-squeda-en-GitHub-0cde2be90d2a4b65897baab916f886ba?pvs=21) en el contenido de cada archivo. Los archivos que no son manifiestos de Kubernetes se mueven a otra carpeta. Recibe como entrada la ruta donde se encuentra los archivos *yaml* examinar y la ruta a la que se van a copiar los ficheros *yaml* que no sean manifiestos de Kubernetes. 
+- **filterManifest:** está diseñado para verificar si los archivos YAML en una carpeta específica son manifiestos de Kubernetes. Esto se determina buscando las palabras clave *apiVersion* y *kind* (dos campos que son obligatorios en cualquier manifiesto de Kubernetes)[[1]](https://www.notion.so/Script-de-b-squeda-en-GitHub-0cde2be90d2a4b65897baab916f886ba?pvs=21) en el contenido de cada archivo. Los archivos que no son manifiestos de Kubernetes se mueven a otra carpeta. Recibe como entrada la ruta donde se encuentra los archivos *yaml* examinar y la ruta a la que se van a copiar los ficheros *yaml* que no sean manifiestos de Kubernetes. 
 
 [[1]](https://www.notion.so/Script-de-b-squeda-en-GitHub-0cde2be90d2a4b65897baab916f886ba?pvs=21) Información obtenida de https://kubernetes.io/docs/concepts/overview/working-with-objects/#required-fields
 

@@ -7,6 +7,7 @@ import stat
 import searchYAML
 import filterManifest
 import csv
+import time
 
 # Año 2024 dividido en periodos de 10-11 dias
 year2024 = [
@@ -53,7 +54,7 @@ github_token = os.getenv("github_token") # mi token de GitHub
 github_user = 'Enriquelp'
 
 # Resto de variables
-query = 'Kubernetes' # string para buscar en GitHub
+query = 'Kubernetes_validator' # string para buscar en GitHub
 clonar_en_directorio = 'Repositories/' # directorio en el que se guardan los repositorios descargados
 destYAML = "YAMLs" # directorio donde se guardan los archivos .yaml
 destNonYAML = "NonYAMLs" # directorio donde se guardan los archivos .yaml que no son manifiestos de kubernetes
@@ -71,6 +72,7 @@ def remove_readonly(func, path, _):
 
 # Función para buscar repositorios en GitHub
 def buscar_repositorios(query, github_user, github_token, page, month):
+    time.sleep(1)
     url = f'https://api.github.com/search/repositories?q={query}+{month}&page={page}&per_page=100&sort=stars&order=desc'
     print(f"Descargando repositorios desde la url -> {url}")
     response = requests.get(url, auth=(github_user, github_token))

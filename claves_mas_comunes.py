@@ -51,6 +51,14 @@ def main(folder_path, output_csv):
     key_counts = key_counter.most_common()
     
     df = pd.DataFrame(key_counts, columns=['Key', 'Count'])
+
+    if not df.empty:
+        max_count = df['Count'].max()
+        df['Percentage'] = (df['Count'] / max_count) * 100
+        df['Percentage'] = df['Percentage'].round(2)  # Redondear a 2 decimales
+
+    df = df[df['Percentage'] >= 1.0]
+    
     df.to_csv(output_csv, index=False)
     print(f"Resultados guardados en {output_csv}")
 

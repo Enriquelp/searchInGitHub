@@ -8,7 +8,9 @@ Los resultados de la ejecución son:
 
 - Carpeta “NonYAMLs”, donde se almacenan los yaml que no eran manifiestos. 
 
-- Fichero CSV, donde se guardan los datos de los repositorios examinados. 
+- Fichero CSV, donde se guardan los datos de los repositorios examinados.
+  
+- Fichero CSV con el nombre de "resultados_claves.csv" con el análisis de las apariciones de los atributos de los manifiestos de Kubernetes.
 
 - Una salida por consola con los datos generales de la ejecución. 
 

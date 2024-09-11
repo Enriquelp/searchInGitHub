@@ -1,9 +1,12 @@
 env/
 __pycache__/
 .env
+.vscode/
 Repositories/
 YAMLs/
 NonYAMLs/
 datos.csv
 resultados_claves.csv
-
+MisYaml/
+Configuraciones.csv
+Kubernetes.csv 

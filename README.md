@@ -9,10 +9,14 @@ Los resultados de la ejecución son:
 - Carpeta “NonYAMLs”, donde se almacenan los yaml que no eran manifiestos. 
 
 - Fichero CSV, donde se guardan los datos de los repositorios examinados.
-  
-- Fichero CSV con el nombre de "resultados_claves.csv" con el análisis de las apariciones de los atributos de los manifiestos de Kubernetes.
 
 - Una salida por consola con los datos generales de la ejecución. 
+
+# Otros scripts útiles
+
+El script "claves_mas_comunes.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
+
+El script "extract_Features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
 
 # Instalación y ejecución
 

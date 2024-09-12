@@ -4,8 +4,8 @@ import os
 import shutil
 import psutil
 import stat
-import searchYAML
-import filterManifest
+import scripts.search_YAMLs as search_YAMLs
+import scripts.filter_Manifest as filter_Manifest
 import csv
 import time
 
@@ -151,7 +151,7 @@ with open(query+'.csv', mode='w', newline='') as file:
                 repo = clonar_repositorio(repoURL, ruta_repositorio)
 
                 # Guardamos todos los archivos YAML de ese repositorio
-                numYamls = searchYAML.main(ruta_repositorio, destYAML)
+                numYamls = search_YAMLs.main(ruta_repositorio, destYAML)
                 numAllYamls += numYamls
                 # Eliminamos el repositorio
                 eliminar_repo(clonar_en_directorio)
@@ -165,6 +165,6 @@ with open(query+'.csv', mode='w', newline='') as file:
                 repositoriosURL, numMaxRepo, urlGitHub = buscar_repositorios(query, github_user, github_token, page, interval)
             
     # Filtramos aquellos .yaml que no son manifiestos de kubernetes
-    numAllNonYamls = filterManifest.main(destYAML, destNonYAML)
+    numAllNonYamls = filter_Manifest.main(destYAML, destNonYAML)
 
     print(f'\nSe han analizado {numAllRepos} repositorios, encontrandose {numAllYamls} ficheros .yaml, de los cuales se han descartado {numAllNonYamls}')

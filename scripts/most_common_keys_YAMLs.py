@@ -63,6 +63,6 @@ def main(folder_path, output_csv):
     print(f"Resultados guardados en {output_csv}")
 
 if __name__ == "__main__":
-    folder_path = 'YAMLs'  # Cambia esto a la ruta de tu carpeta con archivos .yaml
+    folder_path = 'MisYAMLs'  # Cambia esto a la ruta de tu carpeta con archivos .yaml
     output_csv = 'resultados_claves.csv'  # Cambia esto a la ruta donde deseas guardar el CSV
     main(folder_path, output_csv)

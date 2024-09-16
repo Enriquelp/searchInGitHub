@@ -14,25 +14,31 @@ Los resultados de la ejecución son:
 
 # Otros scripts útiles
 
-El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
+- El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
 
-El script "extract_Features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
+- El script "extract_Features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
+
+- El script "valid_config.py" que dado una configuración en formato de lista y un modelo de características, comprueba si se trata de una configuración válida.
+
+La comprobación de una configuracián válida se hace usando un FM y una tabla de mapping, que relaciona las características del modelo con la nomenclatura de las claves encontradas el el fichero yaml. La tabla de mapping tiene 3 columnas, la primera es el nombre de la caracteristica del arbol, la segunda es la nomenclatura que tendria esa caracteristica en la configuracion, y la tercera solo existe para aquellas caracteristicas que podrian aparecer de dos formas diferentes.
+
+Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "spec" (si se define solo un pod) o tambien "spec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec)
 
 # Instalación y ejecución
 
 ```python
 python -m venv env # Crear entorno virtual
 pip install requirements.txt # Instalar dependencias
-python download-repositories.py # Ejecutar el script
+python <nombre-script>.py # Ejecutar el script
 ```
 
-Es necesario crear un archivo .env para guardar el token privado de GitHub
+Es necesario crear un archivo .env para guardar el token privado de GitHub. Este token debe tener permisos para leer y descargar repositorios públicos.
 
 ```
 github_token = 'XXXXX'
 ```
 
-# Configuración Inicial
+# Configuración Inicial del script download_repositories.py
 
 - Se definen intervalos de tiempo para todo el año 2024, dividiéndolo en periodos de 10-11 días. El primer intervalo es el “2024-01-01..2024-01-10”, después el “2024-01-11..2024-01-20”, siendo el ultimo de todos el intervalo “created:2024-12-21..2024-12-31”. Esto supone 36 intervalos, y, por tanto, 36 búsquedas.
 - Se establecen las configuraciones necesarias para realizar búsquedas en GitHub, como el token de autenticación y el nombre de usuario.

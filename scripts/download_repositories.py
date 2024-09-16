@@ -1,3 +1,19 @@
+# Este script descarga repositorios de GitHub y extrae los archivos YAML de los repositorios. Luego, filtra los archivos
+# YAML que no son manifiestos de Kubernetes y guarda la información en un archivo CSV. El archivo CSV cuenta con las
+# siguientes columnas:
+# - nombreRepo: Nombre del repositorio
+# - numRepoIntervalo: Número del repositorio en el intervalo de búsqueda
+# - YAMLsEncontrados: Número de archivos YAML encontrados en el repositorio
+# - stringBusqueda: Cadena de búsqueda utilizada en GitHub
+# - pagBusqueda: Página de búsqueda en GitHub
+# - url: URL de la búsqueda en GitHub
+# Por ultimo, muestra por pantalla el número de repositorios analizados, el número de archivos YAML encontrados y el número
+# de archivos YAML que no son manifiestos de Kubernetes.
+# Para descargar los repositorios, se utiliza la API de GitHub. Se debe proporcionar un token de autenticación de GitHub
+# en la variable de entorno "github_token". El token debe tener permisos para leer repositorios públicos. Para obtener
+# un token de GitHub, siga las instrucciones en https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token.
+
+
 import requests
 import git
 import os

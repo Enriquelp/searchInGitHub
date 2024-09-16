@@ -1,3 +1,9 @@
+# Script que cuenta las claves más comunes en archivos YAML de una carpeta y guarda los resultados en un CSV.
+# las columnas del CSV son:
+# - Key: Clave del archivo YAML
+# - Count: Número de veces que aparece la clave
+# - Percentage: Porcentaje de apariciones de la clave en relación con la clave más común
+
 import os
 import yaml
 from collections import Counter

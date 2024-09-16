@@ -1,3 +1,12 @@
+# Este script extrae las claves de los archivos YAML y las guarda en un archivo CSV. el archivo csv cuenta con las siguientes columnas:
+# File: Nombre del archivo YAML
+# ObjectType: Tipo de objeto YAML (solo si es un manifiesto de Kubernetes)
+# Valid: Indica si el archivo YAML es válido o no
+# numFeatures: Número de características en el archivo YAML
+# ContainVariability: Indica si el archivo YAML contiene variabilidad o no
+# Error: Indica si hubo un error al Comprobar que fuera una configuración válida
+# Config: Claves del archivo YAML
+
 import yaml
 import csv
 from tqdm import tqdm

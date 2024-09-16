@@ -1,3 +1,5 @@
+# Este script comprueba que una configuracion (dada como una lista de claves) es válida dado un modelo de características.
+
 from flamapy.metamodels.configuration_metamodel.models import Configuration
 from flamapy.metamodels.fm_metamodel.models import FeatureModel, Feature
 from flamapy.metamodels.fm_metamodel.transformations import UVLReader

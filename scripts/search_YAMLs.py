@@ -1,5 +1,4 @@
-# Este script busca los archivos YAML de una carpeta y guarda todos ellos en 
-# otra carpeta
+# Este script busca los archivos YAML de una carpeta y guarda todos ellos en otra carpeta
 
 import os
 import shutil

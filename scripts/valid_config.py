@@ -8,7 +8,7 @@ from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
 from flamapy.metamodels.pysat_metamodel.operations import PySATSatisfiableConfiguration
 
 
-FM_PATH = 'models/Pizzas.uvl'
+FM_PATH = 'resources/kubernetes.uvl'
 
 
 def get_all_parents(feature: Feature) -> list[str]:
@@ -55,6 +55,12 @@ def valid_config(configuration: list[str], fm_model: FeatureModel, sat_model: Py
     satisfiable_op.set_configuration(config)
     return satisfiable_op.execute(sat_model).get_result()
 
+def main(configuration):
+    fm_model = UVLReader(FM_PATH).transform()
+    sat_model = FmToPysat(fm_model).transform()
+    valid = valid_config(configuration, fm_model, sat_model)
+    return valid
+
 
 if __name__ == '__main__':
     # You need the model in SAT
@@ -68,14 +74,14 @@ if __name__ == '__main__':
     valid = valid_config(elements, fm_model, sat_model)
 
     # Output the result
-    print(f'Valid? {valid}')
+    #print(f'Valid? {valid}')
 
     # Another example of a partial configuration
-    elements = ['Mozzarella', 'Sicilian', 'Big']
-    valid = valid_config(elements, fm_model, sat_model)
-    print(f'Valid? {valid}')
+    #elements = ['Mozzarella', 'Sicilian', 'Big']
+    #valid = valid_config(elements, fm_model, sat_model)
+    #print(f'Valid? {valid}')
 
     # Another example of a invalid configuration
-    elements = ['Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size']
-    valid = valid_config(elements, fm_model, sat_model)
-    print(f'Valid? {valid}')
+    #elements = ['Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size']
+    #valid = valid_config(elements, fm_model, sat_model)
+    #print(f'Valid? {valid}')

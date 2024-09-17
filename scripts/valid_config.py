@@ -64,6 +64,8 @@ def main(configuration, fm_model, sat_model):
     error = ''
     try:
         valid = valid_config(configuration, fm_model, sat_model)
+        if not valid:
+            error = 'Constraints not satisfied'
     except Exception as e:
         valid = False
         error = str(e)
@@ -76,13 +78,17 @@ if __name__ == '__main__':
     sat_model = FmToPysat(fm_model).transform()
 
     # You need the configuration as a list of features
-    elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
+    #elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
+    #elements = ['metadata', 'apiVersion', 'kind', 'spec', 'KIND_Pod', 'GROUP_core', 'VERSION_v1', 'PodSpec'] # <- falta PodSpec, porque es una restriccion del FM
+    elements = ['metadata', 'SERVICESPEC_Selector', 'SERVICESPEC_PORTS_nodePort', 'SERVICESPEC_Type', 'SERVICESPEC_Ports', 'SERVICESPEC_PORTS_name', 
+                'kind', 'METADATA_name', 'apiVersion', 'SERVICESPEC_PORTS_protocol', 'spec', 'SERVICESPEC_PORTS_targetPort', 'SERVICESPEC_PORTS_port', 'KIND_Service', 
+                'GROUP_core', 'VERSION_v1', 'TYPE_LoadBalancer'] # <- falta SERVICESPEC_PORTS_nodePort, porque es una restriccion del FM (TYPE_LoadBalancer)
 
     # Call the valid operation
     valid = valid_config(elements, fm_model, sat_model)
 
     # Output the result
-    #print(f'Valid? {valid}')
+    print(f'Valid? {valid}')
 
     # Another example of a partial configuration
     #elements = ['Mozzarella', 'Sicilian', 'Big']

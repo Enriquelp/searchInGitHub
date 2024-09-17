@@ -55,11 +55,19 @@ def valid_config(configuration: list[str], fm_model: FeatureModel, sat_model: Py
     satisfiable_op.set_configuration(config)
     return satisfiable_op.execute(sat_model).get_result()
 
-def main(configuration):
-    fm_model = UVLReader(FM_PATH).transform()
+def inizialize_model(model_path):
+    fm_model = UVLReader(model_path).transform()
     sat_model = FmToPysat(fm_model).transform()
-    valid = valid_config(configuration, fm_model, sat_model)
-    return valid
+    return fm_model, sat_model
+
+def main(configuration, fm_model, sat_model):
+    error = ''
+    try:
+        valid = valid_config(configuration, fm_model, sat_model)
+    except Exception as e:
+        valid = False
+        error = str(e)
+    return valid, error
 
 
 if __name__ == '__main__':

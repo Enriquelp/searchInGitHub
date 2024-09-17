@@ -13,21 +13,25 @@ from tqdm import tqdm
 import os
 import valid_config
 
-output_csv = "Configuraciones.csv"
-folder_path = "MisYAMLs"
-mapping_file = "resources\mapping.csv"
+output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
+folder_path = "MisYAMLs" # Ruta de la carpeta con los archivos YAML
+mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
+model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
+fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
 
-# Función recursiva para extraer todas las claves, incluyendo las anidadas, de un archivo YAML
+# Función recursiva para extraer todas las claves, incluyendo las anidadas, de la declaracion de un objeto de Kubernetes.
 def extract_keys(data, parent_key='', kind=None):
     keys = []
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}_{key}" if parent_key else key
-            if parent_key.startswith('spec'): # Si la clave comienza con 'spec', se añade como prefijo el valor de 'kind'
+            # Si la clave comienza con 'spec', se añade como prefijo el valor de 'kind'
+            if parent_key.startswith('spec'): 
                 full_key = f"{kind}{parent_key}_{key}"
             keys.append(full_key)
             keys.extend(extract_keys(value, full_key, kind))
-    elif isinstance(data, list):
+    # Si es una lista, se procesa cada elemento de la lista
+    elif isinstance(data, list): 
         for index, item in enumerate(data):
             full_key = f"{parent_key}"
             keys.extend(extract_keys(item, full_key, kind))
@@ -51,6 +55,7 @@ def translate_keys(keys, map1, map2):
            continue
     return mapped_keys
 
+# Extrae todas las caracteristicas de los objetos definidos en el archivo YAML (puede definirse mas de un objeto en un archivo YAML)
 def obtener_claves_yaml(file_path, map1, map2):
     keys = []
     kinds = []
@@ -68,12 +73,13 @@ def obtener_claves_yaml(file_path, map1, map2):
     return keys, kinds
 
 # Guardar las claves en un archivo CSV
-def guardar_claves_csv(objectType, keys, filename, error, variability, csv_writer):
+def guardar_claves_csv(objectType, keys, filename, variability, csv_writer):
     for key_list, objectType in zip(keys, objectType):
-        csv_writer.writerow([filename, objectType, valid_config.main(key_list), len(key_list), variability, error, key_list])
+        isValid, error = valid_config.main(key_list, fm_model, sat_model)
+        csv_writer.writerow([filename, objectType, isValid, len(key_list), variability, error, key_list])
 
+# Leer el archivo CSV y construir la tabla de mapeo
 def createmapping(mapping_file):
-    # Leer el archivo CSV y construir la tabla de mapeo
     mapping_table = []
     with open(mapping_file, mode='r', newline='') as file:
         reader = csv.reader(file)
@@ -81,27 +87,35 @@ def createmapping(mapping_file):
         for row in reader:
             if len(row) >= 3:  # Asegurarse de que hay al menos 3 columnas
                 mapping_table.append((row[0], row[1], row[2]))
-
     # Crear los diccionarios map1 y map2
     map1 = {n2: n1 for n1, n2, _ in mapping_table}
     map2 = {n3: n1 for n1, _, n3 in mapping_table}
     return map1, map2
 
 if __name__ == '__main__':
+    # Crear el archivo CSV y escribir el encabezado
     with open(output_csv, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['File', 'ObjectType', 'Valid', 'numFeatures', 'ContainVariability', 'Error', 'Config'])  # Escribir el encabezado
-        for filename in tqdm(os.listdir(folder_path)): #tqdm para mostrar una barra de progreso
+        csv_writer.writerow(['File', 'ObjectType', 'Valid', 'numFeatures', 'ContainVariability', 'Error', 'Config'])
+        
+        # Procesar cada archivo YAML en la carpeta
+        for filename in tqdm(os.listdir(folder_path)): # tqdm para mostrar una barra de progreso
+            # Obtener la ruta completa del archivo
             file_path = os.path.join(folder_path, filename)
+            # Crear los diccionarios map1 y map2 para traducir las claves del yaml a caracteristicas del FM (mas eficiente)
+            map1, map2 = createmapping(mapping_file) 
             try:
-                map1, map2 = createmapping(mapping_file) # Crear los diccionarios map1 y map2 para traducir las claves del yaml a caracteristicas del FM
-                keys, objectType = obtener_claves_yaml(file_path, map1, map2) # Obtener las caracteristicas del archivo yaml
-                guardar_claves_csv(objectType, keys, filename,'', False, csv_writer) # Guardar las caracteristicas en el archivo csv
+                # Obtener las caracteristicas del archivo yaml
+                keys, objectType = obtener_claves_yaml(file_path, map1, map2) 
+                # Guardar las caracteristicas en el archivo csv
+                guardar_claves_csv(objectType, keys, filename, False, csv_writer) 
+            # Manejar errores
             except yaml.YAMLError as e:
-                guardar_claves_csv(['none'], [''], filename, '', True ,csv_writer)
+                # Si hay un error al sacar las caracteristicas del archivo YAML
+                guardar_claves_csv(['none'], [''], filename, True ,csv_writer)
                 continue
             except Exception as e:
                 print(f"No se pudo procesar {filename}: {e}")
-                guardar_claves_csv(['none'], [''], filename, '', True ,csv_writer)
+                guardar_claves_csv(['none'], [''], filename, True ,csv_writer)
                 continue
     print(f"Las claves se han guardado en {output_csv}.")

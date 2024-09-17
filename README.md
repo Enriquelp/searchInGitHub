@@ -16,13 +16,13 @@ Los resultados de la ejecución son:
 
 - El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
 
-- El script "extract_Features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
+- El script "extract_features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
 
 - El script "valid_config.py" que dado una configuración en formato de lista y un modelo de características, comprueba si se trata de una configuración válida.
 
 La comprobación de una configuracián válida se hace usando un FM y una tabla de mapping, que relaciona las características del modelo con la nomenclatura de las claves encontradas el el fichero yaml. La tabla de mapping tiene 3 columnas, la primera es el nombre de la caracteristica del arbol, la segunda es la nomenclatura que tendria esa caracteristica en la configuracion, y la tercera solo existe para aquellas caracteristicas que podrian aparecer de dos formas diferentes.
 
-Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "spec" (si se define solo un pod) o tambien "spec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec)
+Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "podspec" (si se define solo un pod) o tambien "deploymentspec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec)
 
 # Instalación y ejecución
 

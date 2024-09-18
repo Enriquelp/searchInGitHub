@@ -22,7 +22,11 @@ Los resultados de la ejecución son:
 
 La comprobación de una configuracián válida se hace usando un FM y una tabla de mapping, que relaciona las características del modelo con la nomenclatura de las claves encontradas el el fichero yaml. La tabla de mapping tiene 3 columnas, la primera es el nombre de la caracteristica del arbol, la segunda es la nomenclatura que tendria esa caracteristica en la configuracion, y la tercera solo existe para aquellas caracteristicas que podrian aparecer de dos formas diferentes.
 
-Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "podspec" (si se define solo un pod) o tambien "deploymentspec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec)
+Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "podspec" (si se define solo un pod) o tambien "deploymentspec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec). Para solucionar este problema de referencias, se añade un prefijo a "spec" indicando el tipo que es realmente (podspec, deploymentspec, servicespec...).
+
+Además, es necesario obtener dos caracteristicas que solo aparecen en el archivo yaml como valores del campo "apiVersion". Estos son  "goup" y "version". Una funcion del script está dedicada a obtener estos valores para añadirlos como caracteristicas del modelo.
+
+
 
 # Instalación y ejecución
 

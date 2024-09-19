@@ -134,10 +134,11 @@ if __name__ == '__main__':
             # Manejar errores
             except yaml.YAMLError as e:
                 # Si hay un error al sacar las caracteristicas del archivo YAML
-                save_keys_csv(['none'], [''], filename, True , '', csv_writer)
+                print(f"Fallo procesando {filename}: {e}")
+                save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
                 continue
             except Exception as e:
                 print(f"No se pudo procesar {filename}: {e}")
-                save_keys_csv(['none'], [''], filename, True , '', csv_writer)
+                save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
                 continue
     print(f"Las claves se han guardado en {output_csv}.")

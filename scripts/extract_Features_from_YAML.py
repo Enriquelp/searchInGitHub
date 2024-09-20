@@ -148,8 +148,8 @@ if __name__ == '__main__':
                 continue
     with open(output_not_processed, mode='w', newline='', encoding='utf-8') as file:
         for (filename, err) in filesNotProcessed:
-            file.write(f'archivo {filename}')
-            file.write(f'error {err}')
+            file.write(f'archivo: {filename} ')
+            file.write(f'error: {err}')
             file.write(f'\n <------------------------------------> \n')
     print(f"Las claves se han guardado en {output_csv}.")
     print(f"No se han podido procesar {numFilesNotProcessed} archivos. La lista se encuentra en {output_not_processed}.")

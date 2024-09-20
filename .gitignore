@@ -10,3 +10,4 @@ resultados_claves.csv
 MisYAMLs/
 Configuraciones.csv
 Kubernetes.csv 
+filesNotProcessed.txt

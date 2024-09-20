@@ -15,7 +15,8 @@ import os
 import valid_config
 
 output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
-folder_path = "MisYAMLs" # Ruta de la carpeta con los archivos YAML
+output_not_processed = "filesNotProcessed.txt" # Ruta del archivo con los archivos no procesados
+folder_path = "YAMLs" # Ruta de la carpeta con los archivos YAML
 mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
 model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
@@ -74,7 +75,7 @@ def read_keys_yaml(file_path, map1, map2):
     keys = []
     kinds = []
     not_found = []
-    with open(file_path, 'r') as file:
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
         # Cargar todos los documentos YAML (incluidos los separadores '---')
         documents = yaml.safe_load_all(file)
         for doc in documents:
@@ -103,7 +104,7 @@ def save_keys_csv(objectType, keys, filename, variability, not_found, csv_writer
 # Leer el archivo CSV y construir la tabla de mapeo
 def create_mapping(mapping_file):
     mapping_table = []
-    with open(mapping_file, mode='r', newline='') as file:
+    with open(mapping_file, mode='r', newline='', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)  # Saltar la cabecera
         for row in reader:
@@ -115,8 +116,10 @@ def create_mapping(mapping_file):
     return map1, map2
 
 if __name__ == '__main__':
+    numFilesNotProcessed = 0
+    filesNotProcessed = []
     # Crear el archivo CSV y escribir el encabezado
-    with open(output_csv, 'w', newline='') as csv_file:
+    with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['File', 'ObjectType', 'Valid', 'numFeatures', 'ContainVariability', 'Error', 'Config', 'featuresNotFound'])
         
@@ -134,11 +137,19 @@ if __name__ == '__main__':
             # Manejar errores
             except yaml.YAMLError as e:
                 # Si hay un error al sacar las caracteristicas del archivo YAML
-                print(f"Fallo procesando {filename}: {e}")
+                numFilesNotProcessed += 1
+                filesNotProcessed.append((filename, str(e)))
                 save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
                 continue
             except Exception as e:
-                print(f"No se pudo procesar {filename}: {e}")
+                numFilesNotProcessed += 1
+                filesNotProcessed.append((filename, str(e)))
                 save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
                 continue
+    with open(output_not_processed, mode='w', newline='', encoding='utf-8') as file:
+        for (filename, err) in filesNotProcessed:
+            file.write(f'archivo {filename}')
+            file.write(f'error {err}')
+            file.write(f'\n <------------------------------------> \n')
     print(f"Las claves se han guardado en {output_csv}.")
+    print(f"No se han podido procesar {numFilesNotProcessed} archivos. La lista se encuentra en {output_not_processed}.")

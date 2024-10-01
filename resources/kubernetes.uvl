@@ -595,18 +595,146 @@ features
                                                         optional   
                                                             SECRET_ITEMS_mode 
                                             nfs 
+                                                mandatory   
+                                                    NFS_path 
+                                                    NFS_server 
+                                                optional    
+                                                    NFS_readOnly 
                                             csi 
+                                                mandatory   
+                                                    CSI_driver 
+                                                optional  
+                                                    CSI_volumeAttributes 
+                                                    CSI_readOnly 
+                                                    CSI_fsType 
+                                                    CSI_nodePublichSecretRef 
+                                                        mandatory   
+                                                            CSI_NODEPUBLISHSECRETREF_name 
                                             downwardAPI 
+                                                mandatory   
+                                                    DOWNWARDAPI_items 
+                                                        mandatory   
+                                                            DOWNWARDAPI_ITEMS_fieldRef 
+                                                                mandatory 
+                                                                    DOWNWARDAPI_ITEMS_FIELDREF_apiVersion 
+                                                                    DOWNWARDAPI_ITEMS_FIELDREF_fieldPath 
+                                                            DOWNWARDAPI_ITEMS_path 
+                                                        optional 
+                                                            DOWNWARDAPI_mode 
+                                                            DOWNWARDAPI_ITEMS_resourceFieldRef 
+                                                                mandatory   
+                                                                    DOWNWARDAPI_ITEMS_RESOURCEFIELDREF_containerName 
+                                                                    DOWNWARDAPI_ITEMS_RESOURCEFIELDREF_resource 
+                                                                optional   
+                                                                    DOWNWARDAPI_ITEMS_RESOURCEFIELDREF_divisor 
+                                                optional
+                                                    DOWNWARDAPI_defaultMode 
                                             ephemeral 
+                                                mandatory   
+                                                    EPHEMERAL_volumeClaimTemplate 
+                                                        mandatory   
+                                                            EPHEMERAL_VOLUMECLAIMTEMPLATE_spec 
+                                                        optional   
+                                                            EPHEMERAL_VOLUMECLAIMTEMPLATE_metadata 
                                             fc 
+                                                mandatory
+                                                    FC_fsType 
+                                                optional    
+                                                    FC_readOnly 
+                                                    FC_lun 
+                                                    FC_targetWWNs 
+                                                        mandatory   
+                                                            FC_TARGETWWNS_targetWWN
+                                                    FC_wwids 
+                                                        mandatory   
+                                                            FC_WWIDS_wwid
                                             flocker 
+                                                mandatory
+                                                    FLOCKER_datsetUUID 
+                                                    FLOCKER_datasetName 
                                             iscsi 
+                                                mandatory 
+                                                    ISCSI_targetPortal 
+                                                    ISCSI_fsType 
+                                                    ISCSI_lun 
+                                                    ISCSI_iqn 
+                                                optional  
+                                                    ISCSI_chapAuthDiscovery 
+                                                    ISCSI_chapAuthSession 
+                                                    ISCSI_initiatorName 
+                                                    ISCSI_iscsiInterface 
+                                                    ISCSI_portals 
+                                                        mandatory   
+                                                            ISCSI_PORTALS_portal
+                                                    ISCSI_readOnly 
+                                                    ISCSI_secretRef 
+                                                        mandatory   
+                                                            ISCSI_SECRETREF_name 
                                             photonPersistentDisk 
+                                                mandatory   
+                                                    PHOTONPERSISTENTDISK_pdID 
+                                                optional
+                                                    PHOTONPERSISTENTDISK_fsType 
                                             projected 
+                                                mandatory   
+                                                    PROJECTED_defaultmode 
+                                                    PROJECTED_sources 
+                                                        alternative   
+                                                            PROJECTED_SOURCES_clusterTrustBundle 
+                                                            PROJECTED_SOURCES_configMap 
+                                                            PROJECTED_SOURCES_downwardAPI 
+                                                            PROJECTED_SOURCES_secret 
+                                                            PROJECTED_SOURCES_serviceAccountToken 
                                             quobyte 
+                                                mandatory   
+                                                    QUOBYTE_volume 
+                                                optional
+                                                    QUOBYTE_group 
+                                                    QUOBYTE_readOnly 
+                                                    QUOBYTE_registry 
+                                                    QUOBYTE_tenant 
+                                                    QUOBYTE_user 
                                             rbd 
+                                                mandatory    
+                                                    RBD_image 
+                                                    RBD_monitors 
+                                                        mandatory   
+                                                            RBD_MONITORS_monitor
+                                                    RBD_pool 
+                                                optional  
+                                                    RBD_fsType 
+                                                    RBD_readOnly 
+                                                    RBD_secretRef 
+                                                    RBD_keyring 
+                                                    RBD_user 
                                             scaleIO 
+                                                mandatory   
+                                                    SCALEIO_gateway 
+                                                    SCALEIO_volumeName 
+                                                    SCALEIO_system 
+                                                    SCALEIO_protectionDomain 
+                                                optional  
+                                                    SCALEIO_fsType 
+                                                    SCALEIO_readOnly 
+                                                    SCALEIO_secretRef 
+                                                        mandatory
+                                                            SCALEIO_SECRETREF_name
+                                                    SCALEIO_sslEnabled 
+                                                    SCALEIO_storageMode 
+                                                        alternative   
+                                                            SCALEIO_STORAGEMODE_thickProvisioned
+                                                            SCALEIO_STORAGEMODE_thinProvisioned
+                                                    SCALEIO_storagePool 
                                             storageos 
+                                                mandatory   
+                                                    STORAGEOS_volumeName 
+                                                optional   
+                                                    STORAGEOS_fsType 
+                                                    STORAGEOS_readOnly 
+                                                    STORAGEOS_secretRef 
+                                                        mandatory   
+                                                            STORAGEOS_SECRETREF_name
+                                                    STORAGEOS_volumeNamespace 
                     ServiceSpec 
                         optional
                             SERVICESPEC_allocateLoadBalancerNodePorts 

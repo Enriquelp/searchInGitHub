@@ -688,10 +688,10 @@ features
                                             quobyte 
                                                 mandatory   
                                                     QUOBYTE_volume 
+                                                    QUOBYTE_registry
                                                 optional
                                                     QUOBYTE_group 
                                                     QUOBYTE_readOnly 
-                                                    QUOBYTE_registry 
                                                     QUOBYTE_tenant 
                                                     QUOBYTE_user 
                                             rbd 
@@ -705,6 +705,8 @@ features
                                                     RBD_fsType 
                                                     RBD_readOnly 
                                                     RBD_secretRef 
+                                                        mandatory   
+                                                            RBD_SECRETREF_name
                                                     RBD_keyring 
                                                     RBD_user 
                                             scaleIO 

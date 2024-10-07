@@ -133,6 +133,8 @@ features
                         mandatory
                             ANNOTATIONS_key
                             ANNOTATIONS_value
+                    METADATA_finalizers
+                    METADATA_generateName
             spec 
                 optional 
                     DeploymentSpec 
@@ -185,8 +187,10 @@ features
                                                     TEMPLATE_METADATA_LABELS_value
                                             TEMPLATE_METADATA_annotations  
                                                 mandatory
-                                                    TEMPLATE__METADATA_ANNOTATIONS_key
-                                                    TEMPLATE__METADATA_ANNOTATIONS_value
+                                                    TEMPLATE_METADATA_ANNOTATIONS_key
+                                                    TEMPLATE_METADATA_ANNOTATIONS_value
+                                            TEMPLATE_METADATA_finalizers
+                                            TEMPLATE_METADATA_generateName
                                     DEPLOYMENTSPEC_TEMPLATE_podspec 
                     PodSpec 
                         mandatory
@@ -841,7 +845,6 @@ features
                                             ADDITIONALPRINTERCOLUMNS_description 
                                             ADDITIONALPRINTERCOLUMNS_priority 
                                             ADDITIONALPRINTERCOLUMNS_format 
-                    SecretSpec 
             binaryData  
                 mandatory
                     BINARYDATA_binaryFile_name
@@ -920,6 +923,11 @@ features
                     RULES_verbs  
                         mandatory
                             RULES_VERBS_value
+            type
+            stringData
+                mandatory   
+                    STRINGDATA_key
+                    STRINGDATA_value
 constraints
     (GROUP_apiextensions | GROUP_apiregistration | GROUP_apps | GROUP_authorization | GROUP_batch | GROUP_coordination | GROUP_core | GROUP_discovery | GROUP_events | GROUP_node | GROUP_policy | GROUP_rbac_authorization | GROUP_scheduling) => VERSION_v1
     (GROUP_admission_registration | GROUP_authentication) => VERSION_v1 | VERSION_v1beta1 | VERSION_v1alpha1
@@ -949,23 +957,22 @@ constraints
     (KIND_SelfSubjectReview | KIND_TokenRequest | KIND_TokenReview) => GROUP_authentication
     KIND_StorageVersion => GROUP_internal_apiserver
     (KIND_ClusterRole | KIND_ClusterRoleBinding | KIND_Role | KIND_RoleBinding)=> GROUP_rbac_authorization
-    DeploymentSpec & PodSpec & ServiceSpec & SecretSpec => spec
+    DeploymentSpec & PodSpec & ServiceSpec => spec
     (TYPE_NodePort | TYPE_LoadBalancer) => SERVICESPEC_PORTS_nodePort
     KIND_Pod => PodSpec
     KIND_Deployment => DeploymentSpec & PodSpec
     KIND_Service => ServiceSpec
     KIND_ConfigMap => binaryData | data
-    KIND_Secret => SecretSpec
+    KIND_Secret => data & type
     KIND_Endpoints => subsets
     KIND_Role => rules
     KIND_CustomResourceDefinition => CustomResourceDefinitionSpec
     DeploymentSpec => PodSpec
     PodSpec => KIND_Pod | KIND_Deployment
-    SecretSpec => KIND_Secret
     rules => KIND_Role
     immutable => KIND_ConfigMap
     CustomResourceDefinitionSpec => KIND_CustomResourceDefinition
-    data => KIND_ConfigMap
+    data => KIND_ConfigMap | KIND_Secret
     binaryData => KIND_ConfigMap
     ServiceSpec => KIND_Service
     SERVICESPEC_clusterIP => !SERVICESPEC_clusterIPs
@@ -980,7 +987,6 @@ constraints
     DEPLOYMENTSPEC_TEMPLATE_podspec => PodSpec
     CONTAINERS_tty => CONTAINERS_stdin
     SERVICESPEC_allocateLoadBalancerNodePorts => TYPE_LoadBalancer
-    ServiceSpec => KIND_Service
     SERVICESPEC_healthCheckNodePort => TYPE_LoadBalancer & EXTERNALTRAFFICPOLICY_Local
     SERVICESPEC_ipFamilyPolicy => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort
     SERVICESPEC_loadBalancerClass => TYPE_LoadBalancer

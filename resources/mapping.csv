@@ -110,6 +110,8 @@ METADATA_annotations,metadata_annotations,-
 ANNOTATIONS_key,metadata_annotations_key,-
 ANNOTATIONS_value,metadata_annotations_value,-
 METADATA_deletionGracePeriodSeconds,metadata_deletionGracePeriodSeconds,-
+METADATA_finalizers,metadata_finalizers,-
+METADATA_generateName,metadata_generateName,-
 spec,spec,-
 DeploymentSpec,deploymentspec,-
 DEPLOYMENTSPEC_minReadySeconds,deploymentspec_minReadySeconds,-
@@ -148,7 +150,9 @@ TEMPLATE_METADATA_LABELS_value,,-
 TEMPLATE_METADATA_annotations,deploymentspec_template_metadata_annotations,-
 TEMPLATE_METADATA_ANNOTATIONS_key,-,-
 TEMPLATE_METADATA_ANNOTATIONS_value,-,-
-TEMPLATE_METADATA_deletionGracePeriodSeconds,-,-
+TEMPLATE_METADATA_deletionGracePeriodSeconds,deploymentspec_template_metadata_deletionGracePeriodSeconds,-
+TEMPLATE_METADATA_finalizers,deploymentspec_template_metadata_finalizers,-
+TEMPLATE_METADATA_generateName,deploymentspec_template_metadata_generateName,-
 DEPLOYMENTSPEC_TEMPLATE_podspec,deploymentspec_template_spec,-
 PodSpec,podspec,deploymentspec_template_spec
 PODSPEC_containers,podspec_containers,deploymentspec_template_spec_containers
@@ -682,3 +686,7 @@ RULES_resourceNames,rules_resourceNames,-
 RULES_RESOURCENAMES_value,-,-
 RULES_verbs,rules_verbs,-
 RULES_VERBS_value,-,-
+type,type,-
+stringData,stringData,-
+STRINGDATA_key,-,-
+STRINGDATA_value,-,-

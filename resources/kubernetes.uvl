@@ -135,6 +135,28 @@ features
                             ANNOTATIONS_value
                     METADATA_finalizers
                     METADATA_generateName
+                    METADATA_managedFields 
+                        mandatory   
+                            METADATA_MANAGEFIELDS_apiversion 
+                        optional
+                            METADATA_MANAGEFIELDS_fieldsType 
+                            METADATA_MANAGEFIELDS_fieldsV1 
+                            METADATA_MANAGEFIELDS_manager 
+                            METADATA_MANAGEFIELDS_operation 
+                                alternative   
+                                    METADATA_MANAGEFIELDS_OPERATION_apply
+                                    METADATA_MANAGEFIELDS_OPERATION_update
+                            METADATA_MANAGEFIELDS_subresource 
+                            METADATA_MANAGEFIELDS_time 
+                    METADATA_ownerReferences 
+                        mandatory   
+                            METADATA_OWNERREFERENCES_apiVersion 
+                            METADATA_OWNERREFERENCES_kind 
+                            METADATA_OWNERREFERENCES_name 
+                            METADATA_OWNERREFERENCES_uid 
+                        optional   
+                            METADATA_OWNERREFERENCES_blockOwnerDeletion 
+                            METADATA_OWNERREFERENCES_controller 
             spec 
                 optional 
                     DeploymentSpec 

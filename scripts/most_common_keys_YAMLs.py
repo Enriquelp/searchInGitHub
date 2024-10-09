@@ -61,14 +61,14 @@ def main(folder_path, output_csv):
     if not df.empty:
         max_count = df['Count'].max()
         df['Percentage'] = (df['Count'] / max_count) * 100
-        df['Percentage'] = df['Percentage'].round(2)  # Redondear a 2 decimales
+        df['Percentage'] = df['Percentage'].round(4)  # Redondear a 4 decimales
 
-    df = df[df['Percentage'] >= 1.0]
+    # df = df[df['Percentage'] >= 1.0]
     
     df.to_csv(output_csv, index=False)
     print(f"Resultados guardados en {output_csv}")
 
 if __name__ == "__main__":
-    folder_path = 'MisYAMLs'  # Cambia esto a la ruta de tu carpeta con archivos .yaml
-    output_csv = 'resultados_claves.csv'  # Cambia esto a la ruta donde deseas guardar el CSV
+    folder_path = 'YAMLs'  # Ruta de la carpeta con archivos .yaml
+    output_csv = 'most_common_keys.csv'  # Ruta donde guardar el CSV
     main(folder_path, output_csv)

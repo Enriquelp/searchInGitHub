@@ -1,4 +1,5 @@
 # Script que cuenta las caracteristicas más comunes en archivos YAML de una carpeta y guarda los resultados en un CSV.
+# Tambien añade con cero apariciones las caracteristicas del FM que no se encontraron en los YAML.
 # las columnas del CSV son:
 # - feature: Clave del archivo YAML
 # - Count: Número de veces que aparece la clave
@@ -10,9 +11,16 @@ from collections import Counter
 import pandas as pd
 from tqdm import tqdm
 import csv
+from flamapy.metamodels.configuration_metamodel.models import Configuration
+from flamapy.metamodels.fm_metamodel.models import FeatureModel, Feature
+from flamapy.metamodels.fm_metamodel.transformations import UVLReader
+from flamapy.metamodels.pysat_metamodel.models import PySATModel
+from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
+from flamapy.metamodels.pysat_metamodel.operations import PySATSatisfiableConfiguration
 
 mapping_file = 'resources/mapping.csv' 
-folder_path = 'YAMLs'  # Ruta de la carpeta con archivos .yaml
+fm = 'resources/kubernetes.uvl'
+folder_path = 'MisYAMLs'  # Ruta de la carpeta con archivos .yaml
 output_csv = 'most_common_features.csv'  # Ruta donde se guardará el CSV
 map1 = {} # diccionario clave (feature) -> valor (string)
 map2 = {} # diccionario clave (feature) -> valor (string)
@@ -85,21 +93,28 @@ def count_keys_in_folder(folder_path):
                 continue
     return key_counter
 
+# Agregar las caracteristicas que no se encontraron en los archivos YAML
+def add_features_not_found(df, fm):
+    fm_model = UVLReader(fm).transform()
+    for feature in fm_model.get_features():
+        if feature not in df['Feature'].values and not feature.is_abstract: # Solo agregar caracteristicas no abstractas
+            df.loc[len(df)] = {'Feature': feature, 'Count': 0, 'Percentage': 0}
+    return df
 
 def main(folder_path, output_csv):
-    create_mapping(mapping_file)
-    key_counter = count_keys_in_folder(folder_path)
-    key_counts = key_counter.most_common()
+    create_mapping(mapping_file) # Creamos los 2 diccionarios para tradcir las claves de los YAML a caracteristicas del FM.
+    key_counter = count_keys_in_folder(folder_path) # Buscamos y contamos las caracteristicas en los YAML.
+    key_counts = key_counter.most_common() # Ordenamos las caracteristicas por frecuencia, de mas a comun a menos.
     
-    df = pd.DataFrame(key_counts, columns=['Feature', 'Count'])
+    df = pd.DataFrame(key_counts, columns=['Feature', 'Count']) # Creamos un DataFrame con las caracteristicas y su frecuencia.
 
-    if not df.empty:
+    if not df.empty: # Si el DataFrame no esta vacio, calculamos el porcentaje de apariciones de cada caracteristica.
         max_count = df['Count'].max()
         df['Percentage'] = (df['Count'] / max_count) * 100
         df['Percentage'] = df['Percentage'].round(4)  # Redondear a 4 decimales
-
-    #df = df[df['Percentage'] >= 1.0] # Filtrar claves con menos del 1% de apariciones
     
+    df = add_features_not_found(df, fm) # Agregamos las caracteristicas que no se encontraron en los archivos YAML
+
     df.to_csv(output_csv, index=False)
     print(f"Resultados guardados en {output_csv}")
 

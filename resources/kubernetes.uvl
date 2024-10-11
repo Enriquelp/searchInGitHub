@@ -5,7 +5,7 @@ features
                 mandatory
                     Group {abstract, doc 'refers to the API group that organizes related resources_ Kubernetes divides its API into logical groups to make it easier to manage, extend, and evolve different types of resources_ These groups are essentially namespaces for related API objects_'} 
                         alternative
-                            GROUP_admission_registration
+                            GROUP_admissionregistration
                             GROUP_apiextensions
                             GROUP_apiregistration
                             GROUP_apps
@@ -18,12 +18,12 @@ features
                             GROUP_core
                             GROUP_discovery
                             GROUP_events
-                            GROUP_flowcontrol_apiserver
-                            GROUP_internal_apiserver
+                            GROUP_flowcontrol
+                            GROUP_internal
                             GROUP_networking
                             GROUP_node
                             GROUP_policy
-                            GROUP_rbac_authorization
+                            GROUP_rbac
                             GROUP_resource
                             GROUP_scheduling
                             GROUP_storage

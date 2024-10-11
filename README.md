@@ -16,7 +16,7 @@ Los resultados de la ejecución son:
 
 - El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
 
-- El script "most_common_features_YAMLs.py" Hace lo mismo que "most_common_keys_YAMLs.py" pero se queda solo con las claves que coinciden con alguna caracteristica del modelo de Kubernetes, ademas de traducirlas segun la nomenclatura con la que se definen en este modelo.
+- El script "most_common_features_YAMLs.py" Hace lo mismo que "most_common_keys_YAMLs.py" pero se queda solo con las claves que coinciden con alguna caracteristica del modelo de Kubernetes, ademas de traducirlas segun la nomenclatura con la que se definen en este modelo. IMPORTANTE: si una caracteristica hija aparece varias veces (caracteristica clonable) en el archivo de configuracion, se cuentan todas las veces. Esto causa que el numero de apariciones de la caracteristica padre pueda ser menor al de una caracteristica hija.
 
 - El script "extract_features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
 

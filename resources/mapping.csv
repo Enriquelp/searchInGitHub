@@ -19,15 +19,15 @@ GROUP_coordination,coordination.k8s.io,-
 GROUP_core,core,-
 GROUP_discovery,discovery.k8s.io,-
 GROUP_events,events.k8s.io,-
-GROUP_flowcontrol_apiserver,flowcontrol.apiserver.k8s.io,-
-GROUP_internal_apiserver,internal.apiserver.k8s.io,-
+GROUP_flowcontrol,flowcontrol.apiserver.k8s.io,-
+GROUP_internal,internal.apiserver.k8s.io,-
 GROUP_networking,networking.k8s.io,-
 GROUP_node,node.k8s.io,-
 GROUP_policy,policy,-
-GROUP_rbac_authorization,rbac.authorization.k8s.io,-
+GROUP_rbac,rbac.authorization.k8s.io,-
 GROUP_resource,resource.k8s.io,-
 GROUP_scheduling,scheduling.k8s.io,-
-GROUP_storage,storage.k8s.io,-s
+GROUP_storage,storagemigration.k8s.io,-
 kind,kind,-
 KIND_Container,Container,-
 KIND_CronJob,CronJob,-
@@ -668,7 +668,7 @@ ADDRESSES_ip,subsets_addresses_ip,-
 ADDRESSES_nodename,subsets_addresses_nodename,-
 ADDRESSES_targetRef,subsets_addresses_targetRef,-
 ADDRESSES_TARGETREF_apiVersion,subsets_addresses_targetRef_apiVersion,-
-ADDRESSES_TARGETREF_fieldPathm,subsets_addresses_targetRef_fieldPath,-
+ADDRESSES_TARGETREF_fieldPath,subsets_addresses_targetRef_fieldPath,-
 ADDRESSES_TARGETREF_kind,subsets_addresses_targetRef_kind,-
 ADDRESSES_TARGETREF_name,subsets_addresses_targetRef_name,-
 ADDRESSES_TARGETREF_namespace,subsets_addresses_targetRef_namespace,-
@@ -680,7 +680,7 @@ NOTREADYADDRESSES_ip,subsets_notReadyAddresses_ip,-
 NOTREADYADDRESSES_nodename,subsets_notReadyAddresses_nodename,-
 NOTREADYADDRESSES_targetRef,subsets_notReadyAddresses_targetRef,-
 NOTREADYADDRESSES_TARGETREF_apiVersion,subsets_notReadyAddresses_targetRef_apiVersion,-
-NOTREADYADDRESSES_TARGETREF_fieldPathm,subsets_notReadyAddresses_targetRef_fieldPath,-
+NOTREADYADDRESSES_TARGETREF_fieldPath,subsets_notReadyAddresses_targetRef_fieldPath,-
 NOTREADYADDRESSES_TARGETREF_kind,subsets_notReadyAddresses_targetRef_kind,-
 NOTREADYADDRESSES_TARGETREF_name,subsets_notReadyAddresses_targetRef_name,-
 NOTREADYADDRESSES_TARGETREF_namespace,subsets_notReadyAddresses_targetRef_namespace,-

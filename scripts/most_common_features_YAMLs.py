@@ -19,8 +19,8 @@ from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
 from flamapy.metamodels.pysat_metamodel.operations import PySATSatisfiableConfiguration
 
 mapping_file = 'resources/mapping.csv' 
-fm = 'resources/kubernetes.uvl'
-folder_path = 'MisYAMLs'  # Ruta de la carpeta con archivos .yaml
+fm_file = 'resources/kubernetes.uvl'
+folder_path = 'YAMLs'  # Ruta de la carpeta con archivos .yaml
 output_csv = 'most_common_features.csv'  # Ruta donde se guardará el CSV
 map1 = {} # diccionario clave (feature) -> valor (string)
 map2 = {} # diccionario clave (feature) -> valor (string)
@@ -40,6 +40,7 @@ def create_mapping(mapping_file):
     map1 = {n2: n1 for n1, n2, _ in mapping_table}
     map2 = {n3: n1 for n1, _, n3 in mapping_table}
 
+# Extraer las claves de un archivo YAML
 def extract_keys(yaml_content, kind,  parent_key=''):
     keys = []
     if isinstance(yaml_content, dict):
@@ -50,17 +51,31 @@ def extract_keys(yaml_content, kind,  parent_key=''):
                   full_key = f"{kind}{parent_key}_{key}"
                 if full_key in map2:
                   feature = map2[full_key]
-                  keys.append(feature)
-                  keys.extend(extract_keys(value, kind, full_key))
+                  if feature not in keys:
+                        keys.append(feature)
+                        keys.extend(extract_keys(value, kind, full_key))
                 elif full_key in map1:
                     feature = map1[full_key]
-                    keys.append(feature)
-                    keys.extend(extract_keys(value, kind, full_key))
+                    if feature not in keys:
+                        keys.append(feature)
+                        keys.extend(extract_keys(value, kind, full_key))
     elif isinstance(yaml_content, list):
         for item in yaml_content:
             keys.extend(extract_keys(item, kind, parent_key))
     return keys
 
+# Obtener el grupo y la versión del objeto de Kubernetes
+def get_group_and_version(doc):
+    var = doc.get('apiVersion', '').split('/')
+    kind = doc.get('kind', '')
+    if len(var) == 2:
+        group, version = var
+    else:
+        group = 'core'
+        version = var[0]
+    return group, version, kind
+
+# Contar las claves en los archivos YAML
 def count_keys_in_folder(folder_path):
     key_counter = Counter()
     for filename in tqdm(os.listdir(folder_path)):
@@ -71,37 +86,52 @@ def count_keys_in_folder(folder_path):
                   documents = yaml.safe_load_all(file)
                   for doc in documents:
                       if doc is not None:
-                          kind = doc.get('kind', '').lower()
-                          keys = extract_keys(doc, kind)
+                          group, version, kind = get_group_and_version(doc)
+                          keys = extract_keys(doc, kind.lower())
+                          if kind in map1: keys.append(map1[kind])
+                          if group in map1: keys.append(map1[group])
+                          if version in map1: keys.append(map1[version])
                           key_counter.update(keys)
             except UnicodeDecodeError:
-                print(f"UnicodeDecodeError: No se pudo leer {filename} con codificación UTF-8. Intentando con la codificación por defecto.")
+                #print(f"UnicodeDecodeError: No se pudo leer {filename} con codificación UTF-8. Intentando con la codificación por defecto.")
                 try:
                     with open(file_path, 'r') as file:
                         documents = yaml.safe_load_all(file)
                         for doc in documents:
                             if doc is not None:
-                                kind = doc.get('kind', '').lower()
+                                group, version, kind = get_group_and_version(doc)
                                 keys = extract_keys(doc, kind)
+                                if kind in map1: keys.append(map1[kind])
+                                if group in map1: keys.append(map1[group])
+                                if version in map1: keys.append(map1[version])
                                 key_counter.update(keys)
                 except (yaml.YAMLError, UnicodeDecodeError) as e:
                     continue
             except yaml.YAMLError as e:
                 continue
             except AttributeError as e:
-                print(f"AttributeError: No se pudo leer {filename}.")
+                #print(f"AttributeError: No se pudo leer {filename}.")
                 continue
     return key_counter
 
-# Agregar las caracteristicas que no se encontraron en los archivos YAML
-def add_features_not_found(df, fm):
-    fm_model = UVLReader(fm).transform()
+# Agregar las caracteristicas hijas obligatorias que no son abstactas
+def add_mandatory_children(df, fm_model, feature, count, percentaje):
+    for child in feature.get_children():
+        if child.is_mandatory() and not child.is_abstract and child.name not in df['Feature'].values:
+            df.loc[len(df)] = {'Feature': child.name, 'Count': count, 'Percentage': percentaje}
+            for f in child.get_children():
+                df = add_mandatory_children(df, fm_model, f, count, percentaje)
+    return df
+
+# Agregar las caracteristicas que no se encontraron en los archivos YAML y tampoco son abstractas
+def add_features_not_found(df, fm_model):
     for feature in fm_model.get_features():
-        if feature not in df['Feature'].values and not feature.is_abstract: # Solo agregar caracteristicas no abstractas
-            df.loc[len(df)] = {'Feature': feature, 'Count': 0, 'Percentage': 0}
+        if feature.name not in df['Feature'].values and not feature.is_abstract: # Solo agregar caracteristicas no abstractas
+            df.loc[len(df)] = {'Feature': feature.name, 'Count': 0, 'Percentage': 0}
     return df
 
 def main(folder_path, output_csv):
+    fm_model = UVLReader(fm_file).transform()
     create_mapping(mapping_file) # Creamos los 2 diccionarios para tradcir las claves de los YAML a caracteristicas del FM.
     key_counter = count_keys_in_folder(folder_path) # Buscamos y contamos las caracteristicas en los YAML.
     key_counts = key_counter.most_common() # Ordenamos las caracteristicas por frecuencia, de mas a comun a menos.
@@ -112,8 +142,20 @@ def main(folder_path, output_csv):
         max_count = df['Count'].max()
         df['Percentage'] = (df['Count'] / max_count) * 100
         df['Percentage'] = df['Percentage'].round(4)  # Redondear a 4 decimales
-    
-    df = add_features_not_found(df, fm) # Agregamos las caracteristicas que no se encontraron en los archivos YAML
+
+    try:
+        for feature_name in df['Feature'].values:
+            feature = fm_model.get_feature_by_name(feature_name)
+            res = df.loc[df['Feature'] == feature.name, ['Count', 'Percentage']]
+            count = int(res['Count'].values[0])        # Convertir a entero
+            percentaje = float(res['Percentage'].values[0])  # Convertir a flotante
+            df = add_mandatory_children(df, fm_model, feature, count, percentaje) # Agregamos las caracteristicas hijas obligatorias
+    except AttributeError as e:
+        print(f"Error: No se pudo encontrar la caracteristica {feature_name} en el modelo FM.")
+
+    df = add_features_not_found(df, fm_model) # Agregamos las caracteristicas que no se encontraron en los archivos YAML
+
+    df = df.sort_values(by='Count', ascending=False) # Ordenar los resultados por frecuencia
 
     df.to_csv(output_csv, index=False)
     print(f"Resultados guardados en {output_csv}")

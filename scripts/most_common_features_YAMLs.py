@@ -22,6 +22,7 @@ mapping_file = 'resources/mapping.csv'
 fm_file = 'resources/kubernetes.uvl'
 folder_path = 'YAMLs'  # Ruta de la carpeta con archivos .yaml
 output_csv = 'most_common_features.csv'  # Ruta donde se guardará el CSV
+output_numConfPerManifest_csv = 'numConfPerManifest2.csv'  # Ruta donde se guardará el CSV con el numero de configuraciones por manifiesto
 map1 = {} # diccionario clave (feature) -> valor (string)
 map2 = {} # diccionario clave (feature) -> valor (string)
 
@@ -78,7 +79,9 @@ def get_group_and_version(doc):
 # Contar las claves en los archivos YAML
 def count_keys_in_folder(folder_path):
     key_counter = Counter()
+    numConfPerManifest = {}
     for filename in tqdm(os.listdir(folder_path)):
+        configs = 0
         if filename.endswith('.yaml'):
             file_path = os.path.join(folder_path, filename)
             try:
@@ -86,6 +89,7 @@ def count_keys_in_folder(folder_path):
                   documents = yaml.safe_load_all(file)
                   for doc in documents:
                       if doc is not None:
+                          configs += 1
                           group, version, kind = get_group_and_version(doc)
                           keys = extract_keys(doc, kind.lower())
                           if kind in map1: keys.append(map1[kind])
@@ -99,6 +103,7 @@ def count_keys_in_folder(folder_path):
                         documents = yaml.safe_load_all(file)
                         for doc in documents:
                             if doc is not None:
+                                configs += 1
                                 group, version, kind = get_group_and_version(doc)
                                 keys = extract_keys(doc, kind)
                                 if kind in map1: keys.append(map1[kind])
@@ -112,7 +117,8 @@ def count_keys_in_folder(folder_path):
             except AttributeError as e:
                 #print(f"AttributeError: No se pudo leer {filename}.")
                 continue
-    return key_counter
+        numConfPerManifest[filename] = configs
+    return key_counter, numConfPerManifest
 
 # Agregar las caracteristicas hijas obligatorias que no son abstactas
 def add_mandatory_children(df, fm_model, feature, count, percentaje):
@@ -133,7 +139,7 @@ def add_features_not_found(df, fm_model):
 def main(folder_path, output_csv):
     fm_model = UVLReader(fm_file).transform()
     create_mapping(mapping_file) # Creamos los 2 diccionarios para tradcir las claves de los YAML a caracteristicas del FM.
-    key_counter = count_keys_in_folder(folder_path) # Buscamos y contamos las caracteristicas en los YAML.
+    key_counter, numConfPerManifest = count_keys_in_folder(folder_path) # Buscamos y contamos las caracteristicas en los YAML.
     key_counts = key_counter.most_common() # Ordenamos las caracteristicas por frecuencia, de mas a comun a menos.
     
     df = pd.DataFrame(key_counts, columns=['Feature', 'Count']) # Creamos un DataFrame con las caracteristicas y su frecuencia.
@@ -156,6 +162,13 @@ def main(folder_path, output_csv):
     df = add_features_not_found(df, fm_model) # Agregamos las caracteristicas que no se encontraron en los archivos YAML
 
     df = df.sort_values(by='Count', ascending=False) # Ordenar los resultados por frecuencia
+
+    # Guardar el numero de configuraciones por manifiesto
+    with open(output_numConfPerManifest_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['File', 'numConfigurations'])
+        for key, value in numConfPerManifest.items():
+            csv_writer.writerow([key, value])
 
     df.to_csv(output_csv, index=False)
     print(f"Resultados guardados en {output_csv}")

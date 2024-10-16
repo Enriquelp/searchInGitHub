@@ -7,6 +7,7 @@
 # Error: Indica si hubo un error al Comprobar que fuera una configuración válida
 # Config: Claves del archivo YAML
 # featuresNotFound: Claves encontradas en el archivo YAML que no se encuentran en el modelo de características
+# Tambien genera un archivo CSV con el numero de configuraciones por manifiesto y un archivo con los archivos no procesados.
 
 import yaml
 import csv
@@ -15,6 +16,7 @@ import os
 import valid_config
 
 output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
+output_numConfPerManifest_csv = "numConfPerManifest.csv" # Ruta del archivo CSV con el numero de configuraciones por manifiesto
 output_not_processed = "filesNotProcessed.txt" # Ruta del archivo con los archivos no procesados
 folder_path = "YAMLs" # Ruta de la carpeta con los archivos YAML
 mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
@@ -27,7 +29,7 @@ def extract_keys(data, parent_key='', kind=None):
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}_{key}" if parent_key else key
-            # Si la clave comienza con 'spec', se añade como prefijo el valor de 'kind'
+            # Si la clave comienza con 'spec', se añade como prefijo el valor de 'kind' generando "deploymentspec" o "servicespec" por ejemplo
             if parent_key.startswith('spec'): 
                 full_key = f"{kind}{parent_key}_{key}"
             keys.append(full_key)
@@ -75,12 +77,14 @@ def read_keys_yaml(file_path, map1, map2):
     keys = []
     kinds = []
     not_found = []
+    configs = 0
     with open(file_path, mode='r', newline='', encoding='utf-8') as file:
         # Cargar todos los documentos YAML (incluidos los separadores '---')
         documents = yaml.safe_load_all(file)
         for doc in documents:
             if doc is None:
                 continue
+            configs += 1 # Contar el numero de configuraciones en el archivo YAML
             # Obtener el valor de 'group', 'version' y 'kind' (para saber cómo prefijar las claves) para incluir esas claves
             group_value, version_value, kind_value = get_group_and_version(doc)
             # Obtener todas las claves del documento YAML
@@ -93,7 +97,7 @@ def read_keys_yaml(file_path, map1, map2):
             keys.append(keys_doc)
             kinds.append(kind_value)
             not_found.append(keys_not_found)
-    return keys, kinds, not_found
+    return keys, kinds, not_found, configs
 
 # Guardar las claves en un archivo CSV
 def save_keys_csv(objectType, keys, filename, variability, not_found, csv_writer):
@@ -118,6 +122,7 @@ def create_mapping(mapping_file):
 if __name__ == '__main__':
     numFilesNotProcessed = 0
     filesNotProcessed = []
+    numConfPerManifest = {}
     # Crear el archivo CSV y escribir el encabezado
     with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
@@ -125,13 +130,16 @@ if __name__ == '__main__':
         
         # Procesar cada archivo YAML en la carpeta
         for filename in tqdm(os.listdir(folder_path)): # tqdm para mostrar una barra de progreso
+            configs = 0
             # Obtener la ruta completa del archivo
             file_path = os.path.join(folder_path, filename)
             # Crear los diccionarios map1 y map2 para traducir las claves del yaml a caracteristicas del FM (mas eficiente)
             map1, map2 = create_mapping(mapping_file) 
             try:
                 # Obtener las caracteristicas del archivo yaml
-                keys, objectType, not_found = read_keys_yaml(file_path, map1, map2) 
+                keys, objectType, not_found, configs = read_keys_yaml(file_path, map1, map2) 
+                # Guardar el numero de configuraciones por manifiesto
+                numConfPerManifest[filename] = configs
                 # Guardar las caracteristicas en el archivo csv
                 save_keys_csv(objectType, keys, filename, False, not_found, csv_writer) 
             # Manejar errores
@@ -139,17 +147,29 @@ if __name__ == '__main__':
                 # Si hay un error al sacar las caracteristicas del archivo YAML
                 numFilesNotProcessed += 1
                 filesNotProcessed.append((filename, str(e)))
+                numConfPerManifest[filename] = configs
                 save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
                 continue
             except Exception as e:
                 numFilesNotProcessed += 1
                 filesNotProcessed.append((filename, str(e)))
-                save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
+                numConfPerManifest[filename] = configs
+                save_keys_csv(['none'], [''], filename, False , [''], csv_writer)
                 continue
+    # Guardar los archivos no procesados
     with open(output_not_processed, mode='w', newline='', encoding='utf-8') as file:
+        file.write(f'No se han podido procesar {numFilesNotProcessed} archivos. \n\n')
         for (filename, err) in filesNotProcessed:
             file.write(f'archivo: {filename} ')
             file.write(f'error: {err}')
             file.write(f'\n <------------------------------------> \n')
+    # Guardar el numero de configuraciones por manifiesto
+    with open(output_numConfPerManifest_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['File', 'numConfigurations'])
+        for key, value in numConfPerManifest.items():
+            csv_writer.writerow([key, value])
+
+    # Mostrar mensaje de finalización
     print(f"Las claves se han guardado en {output_csv}.")
     print(f"No se han podido procesar {numFilesNotProcessed} archivos. La lista se encuentra en {output_not_processed}.")

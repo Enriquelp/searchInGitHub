@@ -12,26 +12,6 @@ Los resultados de la ejecución son:
 
 - Una salida por consola con los datos generales de la ejecución. 
 
-# Otros scripts útiles
-
-- El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
-
-- El script "most_common_features_YAMLs.py" Hace lo mismo que "most_common_keys_YAMLs.py" pero se queda solo con las claves que coinciden con alguna caracteristica del modelo de Kubernetes, ademas de traducirlas segun la nomenclatura con la que se definen en este modelo. IMPORTANTE: si una caracteristica hija aparece varias veces (caracteristica clonable) en el archivo de configuracion, se cuentan todas las veces. Esto causa que el numero de apariciones de la caracteristica padre pueda ser menor al de una caracteristica hija.
-
-- El script "extract_features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
-
-- El script "valid_config.py" que dado una configuración en formato de lista y un modelo de características, comprueba si se trata de una configuración válida.
-
-- El script "fip.py" obtiene los datos necesarios de csv generado por "most_common_features_YAMLs.py" para generar un gráfico de distribucion de probabilidad de las características del modelo de kubernetes basado en los archivos yaml encontrados en GitHub.
-
-La comprobación de una configuracián válida se hace usando un FM y una tabla de mapping, que relaciona las características del modelo con la nomenclatura de las claves encontradas el el fichero yaml. La tabla de mapping tiene 3 columnas, la primera es el nombre de la caracteristica del arbol, la segunda es la nomenclatura que tendria esa caracteristica en la configuracion, y la tercera solo existe para aquellas caracteristicas que podrian aparecer de dos formas diferentes.
-
-Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "podspec" (si se define solo un pod) o tambien "deploymentspec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec). Para solucionar este problema de referencias, se añade un prefijo a "spec" indicando el tipo que es realmente (podspec, deploymentspec, servicespec...).
-
-Además, es necesario obtener dos caracteristicas que solo aparecen en el archivo yaml como valores del campo "apiVersion". Estos son  "goup" y "version". Una funcion del script está dedicada a obtener estos valores para añadirlos como caracteristicas del modelo.
-
-
-
 # Instalación y ejecución
 
 ```python
@@ -99,3 +79,22 @@ github_token = 'XXXXX'
 [[1]](https://www.notion.so/Script-de-b-squeda-en-GitHub-0cde2be90d2a4b65897baab916f886ba?pvs=21) Información obtenida de https://kubernetes.io/docs/concepts/overview/working-with-objects/#required-fields
 
 ![Diagrama.png](Diagrama.png)
+
+# Otros scripts útiles
+
+- El script "most_common_keys_YAMLs.py" analiza todos los archivos .yaml y guarda en un archivo csv una lista de las claves más comunes, ordenadas de mayor a menor número de apariciones.
+
+- El script "most_common_features_YAMLs.py" Hace lo mismo que "most_common_keys_YAMLs.py" pero se queda solo con las claves que coinciden con alguna caracteristica del modelo de Kubernetes, ademas de traducirlas segun la nomenclatura con la que se definen en este modelo. Tambien añade las caracteristicas hijas obligatorias si no se encontraron en la traduccion. 
+IMPORTANTE: si una caracteristica hija aparece varias veces (caracteristica clonable) en el archivo de configuracion, se cuentan todas las veces. Esto causa que el numero de apariciones de la caracteristica padre pueda ser menor al de una caracteristica hija.
+
+- El script "extract_features_from_YAML" crea un archivo csv, donde cada fila almacena una lista de claves del archivo.yaml, si representa una configuracion valida, el archivo del que se ha obtenido la informacion y el numero total de claves encontradas en ese archivo.
+
+- El script "valid_config.py" que dado una configuración en formato de lista y un modelo de características, comprueba si se trata de una configuración válida.
+
+- El script "fip.py" obtiene los datos necesarios de csv generado por "most_common_features_YAMLs.py" para generar un gráfico de distribucion de probabilidad de las características del modelo de kubernetes basado en los archivos yaml encontrados en GitHub.
+
+La comprobación de una configuracián válida se hace usando un FM y una tabla de mapping, que relaciona las características del modelo con la nomenclatura de las claves encontradas el el fichero yaml. La tabla de mapping tiene 3 columnas, la primera es el nombre de la caracteristica del arbol, la segunda es la nomenclatura que tendria esa caracteristica en la configuracion, y la tercera solo existe para aquellas caracteristicas que podrian aparecer de dos formas diferentes.
+
+Por ejemplo, esto pasa en el caso de la caracteristica "spec". Puede representar a un DeploymentSpec, un PodSpec... y podria aparecer con la nomenclatura "podspec" (si se define solo un pod) o tambien "deploymentspec_template_spec" (si se define dentro de un deployment, que tambien tiene un spec). Para solucionar este problema de referencias, se añade un prefijo a "spec" indicando el tipo que es realmente (podspec, deploymentspec, servicespec...).
+
+Además, es necesario obtener dos caracteristicas que solo aparecen en el archivo yaml como valores del campo "apiVersion". Estos son  "goup" y "version". Una funcion del script está dedicada a obtener estos valores para añadirlos como caracteristicas del modelo.

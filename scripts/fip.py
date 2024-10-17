@@ -1,3 +1,6 @@
+# Este script crea un diccionario donde se almacenan las probabilidades de cada característica y 
+# luego escribe un archivo CSV con los porcentajes de las características agrupadas en intervalos de 5%.
+
 import csv
 import math
 

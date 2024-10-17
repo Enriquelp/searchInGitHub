@@ -7,7 +7,8 @@
 # Error: Indica si hubo un error al Comprobar que fuera una configuración válida
 # Config: Claves del archivo YAML
 # featuresNotFound: Claves encontradas en el archivo YAML que no se encuentran en el modelo de características
-# Tambien genera un archivo CSV con el numero de configuraciones por manifiesto y un archivo con los archivos no procesados.
+# Tambien genera un archivo CSV con el numero de configuraciones por manifiesto (incluyendo aquellas donde no se encontraron configuraciones)
+# y un archivo con los archivos no procesados.
 
 import yaml
 import csv
@@ -102,7 +103,7 @@ def read_keys_yaml(file_path, map1, map2):
 # Guardar las claves en un archivo CSV
 def save_keys_csv(objectType, keys, filename, variability, not_found, csv_writer):
     for key_list, objectType, not_found in zip(keys, objectType, not_found):
-        isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model)
+        isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model) #complete_config es la configuracion completa segun el modelo
         csv_writer.writerow([filename, objectType, isValid, len(complete_config), variability, error, complete_config, not_found])
 
 # Leer el archivo CSV y construir la tabla de mapeo

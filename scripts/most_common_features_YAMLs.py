@@ -4,6 +4,7 @@
 # - feature: Clave del archivo YAML
 # - Count: Número de veces que aparece la clave
 # - Percentage: Porcentaje de apariciones de la clave en relación con la clave más común
+# Tambien guarda un archivo CSV con el numero de configuraciones por manifiesto (incluyendo aquellas donde no se encontraron configuraciones)
 
 import os
 import yaml

@@ -11,3 +11,8 @@ MisYAMLs/
 Configuraciones.csv
 Kubernetes.csv 
 filesNotProcessed.txt
+FIP.csv
+most_common_keys.csv
+most_common_features.csv
+numConfPerManifest.csv
+numConfPerManifest2.csv

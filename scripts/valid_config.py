@@ -53,7 +53,7 @@ def valid_config(configuration: list[str], fm_model: FeatureModel, sat_model: Py
     config.set_full(True)
     satisfiable_op = PySATSatisfiableConfiguration()
     satisfiable_op.set_configuration(config)
-    return satisfiable_op.execute(sat_model).get_result()
+    return satisfiable_op.execute(sat_model).get_result(), config.get_selected_elements()
 
 def inizialize_model(model_path):
     fm_model = UVLReader(model_path).transform()
@@ -63,11 +63,11 @@ def inizialize_model(model_path):
 def main(configuration, fm_model, sat_model):
     error = ''
     try:
-        valid = valid_config(configuration, fm_model, sat_model)
+        valid, complete_config = valid_config(configuration, fm_model, sat_model)
     except Exception as e:
         valid = False
         error = str(e)
-    return valid, error
+    return valid, error, complete_config
 
 
 if __name__ == '__main__':
@@ -76,13 +76,15 @@ if __name__ == '__main__':
     sat_model = FmToPysat(fm_model).transform()
 
     # You need the configuration as a list of features
-    elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
+    #elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
+    elements = ['apiVersion', 'kind', 'metadata']
 
     # Call the valid operation
-    valid = valid_config(elements, fm_model, sat_model)
+    valid, complete_config = valid_config(elements, fm_model, sat_model)
 
     # Output the result
     print(f'Valid? {valid}')
+    print(f'Complete configuration: {complete_config}')
 
     # Another example of a partial configuration
     #elements = ['Mozzarella', 'Sicilian', 'Big']

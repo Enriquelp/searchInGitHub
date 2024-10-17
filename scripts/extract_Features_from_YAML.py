@@ -102,8 +102,8 @@ def read_keys_yaml(file_path, map1, map2):
 # Guardar las claves en un archivo CSV
 def save_keys_csv(objectType, keys, filename, variability, not_found, csv_writer):
     for key_list, objectType, not_found in zip(keys, objectType, not_found):
-        isValid, error = valid_config.main(key_list, fm_model, sat_model)
-        csv_writer.writerow([filename, objectType, isValid, len(key_list), variability, error, key_list, not_found])
+        isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model)
+        csv_writer.writerow([filename, objectType, isValid, len(complete_config), variability, error, complete_config, not_found])
 
 # Leer el archivo CSV y construir la tabla de mapeo
 def create_mapping(mapping_file):

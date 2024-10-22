@@ -423,8 +423,8 @@ features
                                         or
                                             RESOURCES_request {doc 'Requests describes the minimum amount of compute resources required_ If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value_ Requests cannot exceed Limits_ More info: https://kubernetes_io/docs/concepts/configuration/manage-resources-containers/'}
                                                 mandatory
-                                                    REQUEST_cpu
-                                                    REQUEST_memory
+                                                    REQUESTS_cpu
+                                                    REQUESTS_memory
                                             RESOURCES_limits {doc 'Limits describes the maximum amount of compute resources allowed_ More info: https://kubernetes_io/docs/concepts/configuration/manage-resources-containers/'}
                                                 mandatory
                                                     LIMITS_cpu

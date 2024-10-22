@@ -49,18 +49,30 @@ def extract_keys(yaml_content, kind,  parent_key=''):
         for key, value in yaml_content.items():
             if isinstance(key, str):  # Asegurarse de que la clave es una cadena
                 full_key = f"{parent_key}_{key}" if parent_key else key
+                full_value = f"{parent_key}_{key}_{value}" if parent_key else f"{key}_{value}"
                 if parent_key.startswith('spec'): 
                   full_key = f"{kind}{parent_key}_{key}"
+                  full_value = f"{kind}{parent_key}_{key}_{value}"
                 if full_key in map2:
-                  feature = map2[full_key]
-                  if feature not in keys:
+                    feature = map2[full_key]
+                    if feature not in keys:
                         keys.append(feature)
                         keys.extend(extract_keys(value, kind, full_key))
+                    if full_value in map2:
+                        feature = map2[full_value]
+                        if feature not in keys:
+                            keys.append(feature)
+                            keys.extend(extract_keys(value, kind, full_key))
                 elif full_key in map1:
                     feature = map1[full_key]
                     if feature not in keys:
                         keys.append(feature)
                         keys.extend(extract_keys(value, kind, full_key))
+                    if full_value in map1:
+                        feature = map1[full_value]
+                        if feature not in keys:
+                            keys.append(feature)
+                            keys.extend(extract_keys(value, kind, full_key))
     elif isinstance(yaml_content, list):
         for item in yaml_content:
             keys.extend(extract_keys(item, kind, parent_key))
@@ -138,7 +150,7 @@ def add_features_not_found(df, fm_model):
     return df
 
 def main(folder_path, output_csv):
-    fm_model = UVLReader(fm_file).transform()
+    fm_model = UVLReader(fm_file).transform() # Cargamos el modelo
     create_mapping(mapping_file) # Creamos los 2 diccionarios para tradcir las claves de los YAML a caracteristicas del FM.
     key_counter, numConfPerManifest = count_keys_in_folder(folder_path) # Buscamos y contamos las caracteristicas en los YAML.
     key_counts = key_counter.most_common() # Ordenamos las caracteristicas por frecuencia, de mas a comun a menos.

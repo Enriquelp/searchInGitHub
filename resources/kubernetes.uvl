@@ -1,5 +1,5 @@
 features 
-    Kubernetes_manifest
+    "Kubernetes resource object"
         mandatory
             apiVersion {doc 'APIVersion defines the versioned schema of this representation of an object_ Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values_ More info: https://git_k8s_io/community/contributors/devel/sig-architecture/api-conventions_md#resources'}
                 mandatory
@@ -1028,7 +1028,8 @@ constraints
     CONTAINERS_tty => CONTAINERS_stdin
     SERVICESPEC_allocateLoadBalancerNodePorts => TYPE_LoadBalancer
     ServiceSpec => KIND_Service
-    SERVICESPEC_ipFamilyPolicy => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort
+    SERVICESPEC_Type => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort
+    SERVICESPEC_ipFamilyPolicy => SingleStack | PreferDualStack | RequireDualStack
     CONTAINERS_SECURITYCONTEXT_allowPrivilegeEscalation => CONTAINERS_SECURITYCONTEXT_privileged
     CONTAINERS_WINDOWSOPTIONS_hostProcess => PODSPEC_hostNetwork
     RULES_apiGroups => RULES_verbs

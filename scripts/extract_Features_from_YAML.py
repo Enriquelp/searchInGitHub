@@ -23,17 +23,25 @@ folder_path = "YAMLs" # Ruta de la carpeta con los archivos YAML
 mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
 model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
+values_of_keys = [] # Lista para almacenar los valores de las claves
 
 # Función recursiva para extraer todas las claves, incluyendo las anidadas, de la declaracion de un objeto de Kubernetes.
 def extract_keys(data, parent_key='', kind=None):
+    global values_of_keys
     keys = []
+    values = []
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}_{key}" if parent_key else key
             # Si la clave comienza con 'spec', se añade como prefijo el valor de 'kind' generando "deploymentspec" o "servicespec" por ejemplo
+            if key == 'spec' and parent_key == '':
+                full_key = f"{kind}{key}"
             if parent_key.startswith('spec'): 
                 full_key = f"{kind}{parent_key}_{key}"
-            keys.append(full_key)
+            if isinstance(value, str):
+                full_value = f"{full_key}_{value}"
+                values_of_keys.append(full_value)
+            keys.append(full_key)    
             keys.extend(extract_keys(value, full_key, kind))
     # Si es una lista, se procesa cada elemento de la lista
     elif isinstance(data, list): 
@@ -90,11 +98,16 @@ def read_keys_yaml(file_path, map1, map2):
             group_value, version_value, kind_value = get_group_and_version(doc)
             # Obtener todas las claves del documento YAML
             keys_doc = extract_keys(doc, kind = kind_value.lower()) 
+            values_doc, values_not_found = translate_keys(values_of_keys, map1, map2)
             keys_doc.append(kind_value)
             keys_doc.append(group_value)
             keys_doc.append(version_value)
             # Traducir las claves
             keys_doc, keys_not_found = translate_keys(keys_doc, map1, map2) 
+            # Se añaden las caracteristicas encontradas como valor de alguna clave a la lista de claves del manifiesto
+            for value in values_doc:
+                if value not in keys_doc:
+                    keys_doc.append(value)
             keys.append(keys_doc)
             kinds.append(kind_value)
             not_found.append(keys_not_found)
@@ -138,6 +151,7 @@ if __name__ == '__main__':
             map1, map2 = create_mapping(mapping_file) 
             try:
                 # Obtener las caracteristicas del archivo yaml
+                values_of_keys = []
                 keys, objectType, not_found, configs = read_keys_yaml(file_path, map1, map2) 
                 # Guardar el numero de configuraciones por manifiesto
                 numConfPerManifest[filename] = configs

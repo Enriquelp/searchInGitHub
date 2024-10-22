@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # You need the configuration as a list of features
     #elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
-    elements = ['apiVersion', 'kind', 'metadata']
+    elements = ['apiVersion', 'metadata', 'spec', 'kind', 'KIND_Pod', 'GROUP_core', 'VERSION_v1', 'Group', 'Version', 'Kubernetes_manifest', 'METADATA_name', 'Workloads_APIs', PodSpec]
 
     # Call the valid operation
     valid, complete_config = valid_config(elements, fm_model, sat_model)

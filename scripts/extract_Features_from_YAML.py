@@ -15,6 +15,7 @@ import csv
 from tqdm import tqdm
 import os
 import valid_config
+import socket
 
 output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
 output_numConfPerManifest_csv = "numConfPerManifest.csv" # Ruta del archivo CSV con el numero de configuraciones por manifiesto
@@ -24,6 +25,21 @@ mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
 model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
 values_of_keys = [] # Lista para almacenar los valores de las claves
+
+def is_ip(value):
+    try:
+        # Intentar validar como IPv4
+        socket.inet_pton(socket.AF_INET, value)
+        return True
+    except socket.error:
+        pass  # No es una IPv4 válida
+    try:
+        # Intentar validar como IPv6
+        socket.inet_pton(socket.AF_INET6, value)
+        return True
+    except socket.error:
+        pass  # No es una IPv6 válida
+    return False
 
 # Función recursiva para extraer todas las claves, incluyendo las anidadas, de la declaracion de un objeto de Kubernetes.
 def extract_keys(data, parent_key='', kind=None):
@@ -39,15 +55,21 @@ def extract_keys(data, parent_key='', kind=None):
             if parent_key.startswith('spec'): 
                 full_key = f"{kind}{parent_key}_{key}"
             if isinstance(value, str):
-                full_value = f"{full_key}_{value}"
+                if is_ip(value): # Si el valor es una IP, se añade como "key_IP_value"
+                    full_value = f"{full_key}_IP"
+                else:
+                    full_value = f"{full_key}_{value}"
                 values_of_keys.append(full_value)
             keys.append(full_key)    
             keys.extend(extract_keys(value, full_key, kind))
     # Si es una lista, se procesa cada elemento de la lista
     elif isinstance(data, list): 
+        full_key = f"{parent_key}"
         for index, item in enumerate(data):
-            full_key = f"{parent_key}"
-            keys.extend(extract_keys(item, full_key, kind))
+            if isinstance(item, str) and is_ip(item):
+                values_of_keys.append(full_key + "_IP") 
+            else:
+                keys.extend(extract_keys(item, full_key, kind))      
     return list(set(keys)) # Eliminar duplicados
 
 #funcion para traducir las claves de los archivos YAML en caracteristiacs del modelo.
@@ -55,9 +77,11 @@ def translate_keys(keys, map1, map2):
     # Lista para almacenar las claves mapeadas
     mapped_keys = []
     keys_not_found = []
+
     
     # Procesar cada clave
     for key in keys:
+  
         if key in map2:
             # Si está en la 3ra columna, sustituir por el valor de la 1ra columna
             mapped_keys.append(map2[key])
@@ -87,12 +111,14 @@ def read_keys_yaml(file_path, map1, map2):
     kinds = []
     not_found = []
     configs = 0
+    global values_of_keys
     with open(file_path, mode='r', newline='', encoding='utf-8') as file:
         # Cargar todos los documentos YAML (incluidos los separadores '---')
         documents = yaml.safe_load_all(file)
         for doc in documents:
             if doc is None:
                 continue
+            values_of_keys = []
             configs += 1 # Contar el numero de configuraciones en el archivo YAML
             # Obtener el valor de 'group', 'version' y 'kind' (para saber cómo prefijar las claves) para incluir esas claves
             group_value, version_value, kind_value = get_group_and_version(doc)

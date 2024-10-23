@@ -77,14 +77,13 @@ if __name__ == '__main__':
 
     # You need the configuration as a list of features
     #elements = ['Pizza', 'Topping', 'Mozzarella', 'Dough', 'Sicilian', 'Size', 'Normal']
-    elements = ['apiVersion', 'metadata', 'spec', 'kind', 'KIND_Pod', 'GROUP_core', 'VERSION_v1', 'Group', 'Version', 'Kubernetes_manifest', 'METADATA_name', 'Workloads_APIs', PodSpec]
+    elements = ['IMAGEPULLPOLICY_always', 'METADATA_name', 'METADATA_namespace', 'METADATA_labels', 'DEPLOYMENTSPEC_selector', 'SELECTOR_matchLabels', 'DEPLOYMENTSPEC_replicas', 'DEPLOYMENTSPEC_template', 'CONTAINERS_name', 'metadata', 'PODSPEC_containers', 'apiVersion', 'DEPLOYMENTSPEC_revisionHistoryLimit', 'DEPLOYMENTSPEC_TEMPLATE_metadata', 'TEMPLATE_METADATA_labels', 'PodSpec', 'CONTAINERS_imagePullPolicy', 'DeploymentSpec', 'CONTAINERS_image', 'kind', 'KIND_Deployment', 'GROUP_apps', 'VERSION_v1', 'Group', 'Version', 'Kubernetes resource object', 'LABELS_key', 'LABELS_value', 'spec', 'MATCHLABELS_key', 'MATCHLABELS_value', 'DEPLOYMENTSPEC_TEMPLATE_podspec', 'TEMPLATE_METADATA_LABELS_key', 'TEMPLATE_METADATA_LABELS_value', 'Workloads_APIs']
 
     # Call the valid operation
     valid, complete_config = valid_config(elements, fm_model, sat_model)
 
     # Output the result
     print(f'Valid? {valid}')
-    print(f'Complete configuration: {complete_config}')
 
     # Another example of a partial configuration
     #elements = ['Mozzarella', 'Sicilian', 'Big']

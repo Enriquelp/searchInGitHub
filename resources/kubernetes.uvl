@@ -1030,6 +1030,5 @@ constraints
     ServiceSpec => KIND_Service
     SERVICESPEC_Type => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort
     SERVICESPEC_ipFamilyPolicy => SingleStack | PreferDualStack | RequireDualStack
-    CONTAINERS_SECURITYCONTEXT_allowPrivilegeEscalation => CONTAINERS_SECURITYCONTEXT_privileged
     CONTAINERS_WINDOWSOPTIONS_hostProcess => PODSPEC_hostNetwork
     RULES_apiGroups => RULES_verbs

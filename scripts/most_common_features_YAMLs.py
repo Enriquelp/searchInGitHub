@@ -18,6 +18,7 @@ from flamapy.metamodels.fm_metamodel.transformations import UVLReader
 from flamapy.metamodels.pysat_metamodel.models import PySATModel
 from flamapy.metamodels.pysat_metamodel.transformations import FmToPysat
 from flamapy.metamodels.pysat_metamodel.operations import PySATSatisfiableConfiguration
+import socket
 
 mapping_file = 'resources/mapping.csv' 
 fm_file = 'resources/kubernetes.uvl'
@@ -42,6 +43,22 @@ def create_mapping(mapping_file):
     map1 = {n2: n1 for n1, n2, _ in mapping_table}
     map2 = {n3: n1 for n1, _, n3 in mapping_table}
 
+# Validar si un valor es una IP (IPv4 o IPv6)
+def is_ip(value):
+    try:
+        # Intentar validar como IPv4
+        socket.inet_pton(socket.AF_INET, value)
+        return True
+    except socket.error:
+        pass  # No es una IPv4 válida
+    try:
+        # Intentar validar como IPv6
+        socket.inet_pton(socket.AF_INET6, value)
+        return True
+    except socket.error:
+        pass  # No es una IPv6 válida
+    return False
+
 # Extraer las claves de un archivo YAML
 def extract_keys(yaml_content, kind,  parent_key=''):
     keys = []
@@ -52,7 +69,12 @@ def extract_keys(yaml_content, kind,  parent_key=''):
                 full_value = f"{parent_key}_{key}_{value}" if parent_key else f"{key}_{value}"
                 if parent_key.startswith('spec'): 
                   full_key = f"{kind}{parent_key}_{key}"
-                  full_value = f"{kind}{parent_key}_{key}_{value}"
+                  if isinstance(value, str):
+                    if is_ip(value): # Si el valor es una IP, se añade como "key_IP_value"
+                        full_value = f"{full_key}_IP"
+                    else:
+                        full_value = f"{full_key}_{value}"
+                # Buscamos la clave en el map2
                 if full_key in map2:
                     feature = map2[full_key]
                     if feature not in keys:
@@ -63,6 +85,7 @@ def extract_keys(yaml_content, kind,  parent_key=''):
                         if feature not in keys:
                             keys.append(feature)
                             keys.extend(extract_keys(value, kind, full_key))
+                # Buscamos la clave en el map2 
                 elif full_key in map1:
                     feature = map1[full_key]
                     if feature not in keys:
@@ -74,7 +97,10 @@ def extract_keys(yaml_content, kind,  parent_key=''):
                             keys.append(feature)
                             keys.extend(extract_keys(value, kind, full_key))
     elif isinstance(yaml_content, list):
+        full_key = f"{parent_key}"
         for item in yaml_content:
+            if isinstance(item, str) and is_ip(item):
+                keys.append(full_key + "_IP")
             keys.extend(extract_keys(item, kind, parent_key))
     return keys
 

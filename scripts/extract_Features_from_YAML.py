@@ -26,6 +26,7 @@ model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
 values_of_keys = [] # Lista para almacenar los valores de las claves
 
+# Validar si un valor es una IP (IPv4 o IPv6)
 def is_ip(value):
     try:
         # Intentar validar como IPv4

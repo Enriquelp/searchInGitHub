@@ -878,10 +878,10 @@ features
                                         mandatory      
                                             SCHEMA_openAPIV3Schema {incomplete, doc 'OpenAPIV3Schema is the OpenAPI v3 schema to use for validation and pruning_'}
                                                 optional   
-                                                    OPENAPIV3SCHEMA_type {unnavalible}        
-                                                    OPENAPIV3SCHEMA_properties {unnavalible}
-                                                    OPENAPIV3SCHEMA_description {unnavalible}
-                                                    OPENAPIV3SCHEMA_required {unnavalible}                              
+                                                    OPENAPIV3SCHEMA_type {unavalible}        
+                                                    OPENAPIV3SCHEMA_properties {unavalible}
+                                                    OPENAPIV3SCHEMA_description {unavalible}
+                                                    OPENAPIV3SCHEMA_required {unavalible}                              
                                     VERSIONS_additionalPrinterColumns   {doc 'AdditionalPrinterColumns are additional columns shown e_g_ in kubectl next to the name_ Defaults to a created-at column_ More info: https://kubernetes_io/docs/reference/using-api/api-concepts/#additionalprintercolumns'}
                                         optional
                                             ADDITIONALPRINTERCOLUMNS_name {doc 'name is a human readable name for the column_'}
@@ -1003,19 +1003,14 @@ constraints
     KIND_StorageVersion => GROUP_internal
     (KIND_ClusterRole | KIND_ClusterRoleBinding | KIND_Role | KIND_RoleBinding)=> GROUP_rbac
     DeploymentSpec & PodSpec & ServiceSpec => spec
-    KIND_Pod => PodSpec
-    KIND_Deployment => DeploymentSpec & PodSpec
-    KIND_Service => ServiceSpec
     KIND_ConfigMap => binaryData | data 
     KIND_Endpoints => subsets
     KIND_Role => rules
-    KIND_CustomResourceDefinition => CustomResourceDefinitionSpec
     immutable => KIND_ConfigMap | KIND_Secret
     stringData => KIND_Secret
     CustomResourceDefinitionSpec => KIND_CustomResourceDefinition
     data => KIND_ConfigMap | KIND_Secret
     binaryData => KIND_ConfigMap
-    DeploymentSpec => PodSpec
     PodSpec => KIND_Pod | KIND_Deployment
     rules => KIND_Role
     DeploymentSpec => KIND_Deployment

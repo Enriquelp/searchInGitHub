@@ -20,11 +20,12 @@ import socket
 output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
 output_numConfPerManifest_csv = "numConfPerManifest.csv" # Ruta del archivo CSV con el numero de configuraciones por manifiesto
 output_not_processed = "filesNotProcessed.txt" # Ruta del archivo con los archivos no procesados
-folder_path = "YAMLs" # Ruta de la carpeta con los archivos YAML
+folder_path = "MisYAMLs" # Ruta de la carpeta con los archivos YAML
 mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
 model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
 values_of_keys = [] # Lista para almacenar los valores de las claves
+cardinality = False # Indica si la configuracion contiene cardinalidad
 
 # Validar si un valor es una IP (IPv4 o IPv6)
 def is_ip(value):
@@ -47,6 +48,7 @@ def extract_keys(data, parent_key='', kind=None):
     global values_of_keys
     keys = []
     values = []
+    global cardinality
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}_{key}" if parent_key else key
@@ -66,6 +68,7 @@ def extract_keys(data, parent_key='', kind=None):
     # Si es una lista, se procesa cada elemento de la lista
     elif isinstance(data, list): 
         full_key = f"{parent_key}"
+        cardinality = True
         for index, item in enumerate(data):
             if isinstance(item, str) and is_ip(item):
                 values_of_keys.append(full_key + "_IP") 
@@ -111,8 +114,10 @@ def read_keys_yaml(file_path, map1, map2):
     keys = []
     kinds = []
     not_found = []
+    cardinalities = []
     configs = 0
     global values_of_keys
+    global cardinality
     with open(file_path, mode='r', newline='', encoding='utf-8') as file:
         # Cargar todos los documentos YAML (incluidos los separadores '---')
         documents = yaml.safe_load_all(file)
@@ -120,6 +125,7 @@ def read_keys_yaml(file_path, map1, map2):
             if doc is None:
                 continue
             values_of_keys = []
+            cardinality = False
             configs += 1 # Contar el numero de configuraciones en el archivo YAML
             # Obtener el valor de 'group', 'version' y 'kind' (para saber cómo prefijar las claves) para incluir esas claves
             group_value, version_value, kind_value = get_group_and_version(doc)
@@ -137,14 +143,15 @@ def read_keys_yaml(file_path, map1, map2):
                     keys_doc.append(value)
             keys.append(keys_doc)
             kinds.append(kind_value)
+            cardinalities.append(cardinality)
             not_found.append(keys_not_found)
-    return keys, kinds, not_found, configs
+    return keys, kinds, not_found, configs, cardinalities
 
 # Guardar las claves en un archivo CSV
-def save_keys_csv(objectType, keys, filename, variability, not_found, csv_writer):
-    for key_list, objectType, not_found in zip(keys, objectType, not_found):
-        isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model) #complete_config es la configuracion completa segun el modelo
-        csv_writer.writerow([filename, objectType, isValid, len(complete_config), variability, error, complete_config, not_found])
+def save_keys_csv(objectType, keys, filename, variability, cardinalities, not_found, csv_writer):
+    for key_list, objectType, not_found, cardi in zip(keys, objectType, not_found, cardinalities):
+        isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model, cardi) #complete_config es la configuracion completa segun el modelo
+        csv_writer.writerow([filename, objectType, isValid, len(complete_config), variability, cardi, error, complete_config, not_found])
 
 # Leer el archivo CSV y construir la tabla de mapeo
 def create_mapping(mapping_file):
@@ -167,7 +174,7 @@ if __name__ == '__main__':
     # Crear el archivo CSV y escribir el encabezado
     with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['File', 'ObjectType', 'Valid', 'numFeatures', 'ContainVariability', 'Error', 'Config', 'featuresNotFound'])
+        csv_writer.writerow(['File', 'ObjectType', 'Valid', 'numFeatures', 'ContainVariability', 'ContainCardinality', 'Error', 'Config', 'featuresNotFound'])
         
         # Procesar cada archivo YAML en la carpeta
         for filename in tqdm(os.listdir(folder_path)): # tqdm para mostrar una barra de progreso
@@ -179,11 +186,11 @@ if __name__ == '__main__':
             try:
                 # Obtener las caracteristicas del archivo yaml
                 values_of_keys = []
-                keys, objectType, not_found, configs = read_keys_yaml(file_path, map1, map2) 
+                keys, objectType, not_found, configs, cardinalities = read_keys_yaml(file_path, map1, map2) 
                 # Guardar el numero de configuraciones por manifiesto
                 numConfPerManifest[filename] = configs
                 # Guardar las caracteristicas en el archivo csv
-                save_keys_csv(objectType, keys, filename, False, not_found, csv_writer) 
+                save_keys_csv(objectType, keys, filename, False, cardinalities, not_found, csv_writer) 
             # Manejar errores
             except yaml.YAMLError as e:
                 # Si hay un error al sacar las caracteristicas del archivo YAML

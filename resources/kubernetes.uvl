@@ -1023,7 +1023,6 @@ constraints
     CONTAINERS_tty => CONTAINERS_stdin
     SERVICESPEC_allocateLoadBalancerNodePorts => TYPE_LoadBalancer
     ServiceSpec => KIND_Service
-    SERVICESPEC_Type => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort
-    SERVICESPEC_ipFamilyPolicy => SingleStack | PreferDualStack | RequireDualStack
+    SERVICESPEC_Type => TYPE_LoadBalancer | TYPE_ClusterIP | TYPE_NodePort | TYPE_ExternalName
     CONTAINERS_WINDOWSOPTIONS_hostProcess => PODSPEC_hostNetwork
-    RULES_apiGroups => RULES_verbs
+    RULES_apiGroups => RULES_verbs 

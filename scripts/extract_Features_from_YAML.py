@@ -10,6 +10,7 @@
 # Tambien genera un archivo CSV con el numero de configuraciones por manifiesto (incluyendo aquellas donde no se encontraron configuraciones)
 # y un archivo con los archivos no procesados.
 
+import re
 import yaml
 import csv
 from tqdm import tqdm
@@ -20,11 +21,12 @@ import socket
 output_csv = "Configuraciones.csv" # Ruta del archivo CSV de salida
 output_numConfPerManifest_csv = "numConfPerManifest.csv" # Ruta del archivo CSV con el numero de configuraciones por manifiesto
 output_not_processed = "filesNotProcessed.txt" # Ruta del archivo con los archivos no procesados
-folder_path = "MisYAMLs" # Ruta de la carpeta con los archivos YAML
+folder_path = "YAMLs" # Ruta de la carpeta con los archivos YAML
 mapping_file = "resources\mapping.csv" # Ruta del archivo de mapeo
 model_path = "resources\kubernetes.uvl" # Ruta del modelo de características
 fm_model, sat_model = valid_config.inizialize_model(model_path) # Inicializar los modelos (Mas eficiente cargarlos solo una vez)
 values_of_keys = [] # Lista para almacenar los valores de las claves
+variability = False # Indica si la configuracion contiene variabilidad
 cardinality = False # Indica si la configuracion contiene cardinalidad
 
 # Validar si un valor es una IP (IPv4 o IPv6)
@@ -108,6 +110,14 @@ def get_group_and_version(doc):
         version = var[0]
     return group, version, kind
 
+# Comprueba si el manifiesto contiene variabilidad
+def check_variability(yaml_data):
+    # Convertimos el YAML a string para buscar la variabilidad en cada línea
+    yaml_str = yaml.dump(yaml_data)
+    # Usamos una expresión regular para encontrar "{{ algo }}" en el YAML
+    variable_pattern = re.compile(r'\{\{.*?\}\}')
+    # Si encontramos coincidencias, devolvemos True; si no, devolvemos False
+    return bool(variable_pattern.search(yaml_str))
 
 # Extrae todas las caracteristicas de los objetos definidos en el archivo YAML (puede definirse mas de un objeto en un archivo YAML)
 def read_keys_yaml(file_path, map1, map2):
@@ -115,9 +125,11 @@ def read_keys_yaml(file_path, map1, map2):
     kinds = []
     not_found = []
     cardinalities = []
+    variabilities = []
     configs = 0
     global values_of_keys
     global cardinality
+    global variability
     with open(file_path, mode='r', newline='', encoding='utf-8') as file:
         # Cargar todos los documentos YAML (incluidos los separadores '---')
         documents = yaml.safe_load_all(file)
@@ -126,7 +138,11 @@ def read_keys_yaml(file_path, map1, map2):
                 continue
             values_of_keys = []
             cardinality = False
+            variability = False
             configs += 1 # Contar el numero de configuraciones en el archivo YAML
+            # Comprobar si el manifiesto contiene variabilidad
+            variability = check_variability(doc)
+            variabilities.append(variability)
             # Obtener el valor de 'group', 'version' y 'kind' (para saber cómo prefijar las claves) para incluir esas claves
             group_value, version_value, kind_value = get_group_and_version(doc)
             # Obtener todas las claves del documento YAML
@@ -145,11 +161,11 @@ def read_keys_yaml(file_path, map1, map2):
             kinds.append(kind_value)
             cardinalities.append(cardinality)
             not_found.append(keys_not_found)
-    return keys, kinds, not_found, configs, cardinalities
+    return keys, kinds, not_found, configs, cardinalities, variabilities
 
 # Guardar las claves en un archivo CSV
-def save_keys_csv(objectType, keys, filename, variability, cardinalities, not_found, csv_writer):
-    for key_list, objectType, not_found, cardi in zip(keys, objectType, not_found, cardinalities):
+def save_keys_csv(objectType, keys, filename, variabilities, cardinalities, not_found, csv_writer):
+    for key_list, objectType, variability, not_found, cardi in zip(keys, objectType, variabilities, not_found, cardinalities):
         isValid, error, complete_config = valid_config.main(key_list, fm_model, sat_model, cardi) #complete_config es la configuracion completa segun el modelo
         csv_writer.writerow([filename, objectType, isValid, len(complete_config), variability, cardi, error, complete_config, not_found])
 
@@ -186,24 +202,34 @@ if __name__ == '__main__':
             try:
                 # Obtener las caracteristicas del archivo yaml
                 values_of_keys = []
-                keys, objectType, not_found, configs, cardinalities = read_keys_yaml(file_path, map1, map2) 
+                keys, objectType, not_found, configs, cardinalities, variabilities = read_keys_yaml(file_path, map1, map2) 
                 # Guardar el numero de configuraciones por manifiesto
                 numConfPerManifest[filename] = configs
                 # Guardar las caracteristicas en el archivo csv
-                save_keys_csv(objectType, keys, filename, False, cardinalities, not_found, csv_writer) 
+                save_keys_csv(objectType, keys, filename, variabilities, cardinalities, not_found, csv_writer) 
             # Manejar errores
             except yaml.YAMLError as e:
                 # Si hay un error al sacar las caracteristicas del archivo YAML
                 numFilesNotProcessed += 1
-                filesNotProcessed.append((filename, str(e)))
+                error_message = str(e)
+                filesNotProcessed.append((filename, error_message))
                 numConfPerManifest[filename] = configs
-                save_keys_csv(['none'], [''], filename, True , [''], csv_writer)
+                # Hago distincion entre estos errores porque se dan cuando hay variabilidad "{{}}"
+                if "while parsing a block mapping" or "while parsing a flow node" in error_message:
+                    save_keys_csv(['none'], [''], filename, {True}, [False], [''], csv_writer)
+                else:
+                    save_keys_csv(['none'], [''], filename, {False}, [False], [''], csv_writer)
                 continue
             except Exception as e:
                 numFilesNotProcessed += 1
-                filesNotProcessed.append((filename, str(e)))
+                error_message = str(e)
+                filesNotProcessed.append((filename, error_message))
                 numConfPerManifest[filename] = configs
-                save_keys_csv(['none'], [''], filename, False , [''], csv_writer)
+                # Hago distincion entre estos errores porque se dan cuando hay variabilidad "{{}}"
+                if "while constructing a mapping" or "while scanning a simple key" in error_message:
+                    save_keys_csv(['none'], [''], filename, {True}, [False], [''], csv_writer)
+                else:
+                    save_keys_csv(['none'], [''], filename, {False}, [False], [''], csv_writer)
                 continue
     # Guardar los archivos no procesados
     with open(output_not_processed, mode='w', newline='', encoding='utf-8') as file:

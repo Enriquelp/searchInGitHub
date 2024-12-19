@@ -1,3 +1,5 @@
+Nota: este código se ha usado como base para el projecto del grupo de investigación CAOSD de la E.T.S.I. Informatica (Universidad de Málaga), alojado en [este repositorio](https://github.com/CAOSD-group/kubernetes_fm).
+
 # Script de búsqueda en GitHub
 
 Este script cumple con el objetivo de examinar repositorios de GitHub en busca de ficheros yaml, más concretamente manifiestos de kubernetes, creados durante el año 2024. De esta forma, los resultados son lo más recientes posibles. 
